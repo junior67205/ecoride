@@ -1,36 +1,95 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# EcoRide
 
-## Getting Started
+**Plateforme de covoiturage écologique – Projet de titre professionnel Développeur Web & Web Mobile**
 
-First, run the development server:
+---
+
+## Présentation
+
+EcoRide est une application web de covoiturage dédiée à la réduction de l'impact environnemental des déplacements en voiture.  
+Ce projet a été réalisé dans le cadre du titre professionnel Développeur Web et Web Mobile.
+
+---
+
+## Prérequis
+
+- Node.js (version 18 ou supérieure)
+- npm (version 9 ou supérieure)
+- MySQL (pour la base de données relationnelle)
+- (Optionnel) MongoDB (pour la partie NoSQL)
+- Git
+
+---
+
+## Installation
+
+1. **Cloner le dépôt**
+
+   ```bash
+   git clone https://github.com/votre-utilisateur/ecoride.git
+   cd ecoride
+   ```
+
+2. **Installer les dépendances**
+
+   ```bash
+   npm install
+   ```
+
+3. **Configurer les variables d'environnement**
+
+   - Copier le fichier `.env.example` en `.env` et renseigner vos informations (base de données, etc.)
+
+4. **Créer la base de données**
+
+   - Importer le fichier `sql/create_db.sql` dans votre MySQL :
+     ```bash
+     mysql -u root -p < sql/create_db.sql
+     ```
+   - (Optionnel) Ajouter des données de test :
+     ```bash
+     mysql -u root -p < sql/seed_db.sql
+     ```
+
+5. **Lancer les migrations Prisma**
+
+   ```bash
+   npx prisma migrate dev
+   ```
+
+6. **Démarrer l'application**
+   ```bash
+   npm run dev
+   ```
+   L'application sera accessible sur [http://localhost:3000](http://localhost:3000)
+
+---
+
+## Lancer les tests
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm test
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts utiles
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `npm run dev` : Lancer le serveur de développement
+- `npm run build` : Générer la version de production
+- `npm run lint` : Vérifier la qualité du code
+- `npm run format` : Formater le code avec Prettier
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## Déploiement
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Pour déployer l'application sur un serveur ou une plateforme cloud (Vercel, Netlify, etc.), suivre la documentation technique dans `/docs/documentation-technique.pdf`.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## Aide
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Pour toute question, contactez l'équipe EcoRide ou consultez la documentation dans le dossier `/docs`.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
