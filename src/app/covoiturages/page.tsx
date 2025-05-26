@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
+import CovoiturageFiltres from './CovoiturageFiltres';
 
 // Exemple de type pour un covoiturage
 
@@ -32,6 +33,12 @@ export default function CovoituragesPage() {
   const [results, setResults] = useState<Covoiturage[]>(MOCK_COVOITURAGES);
   const [submitted, setSubmitted] = useState(false);
   const [suggestion, setSuggestion] = useState<Covoiturage | null>(null);
+  // Filtres US4
+  const [filtreEco, setFiltreEco] = useState(false);
+  const [filtrePrix, setFiltrePrix] = useState('');
+  const [filtreDuree, setFiltreDuree] = useState('');
+  const [filtreNote, setFiltreNote] = useState('');
+  const [showFiltres, setShowFiltres] = useState(false);
 
   // Recherche automatique si paramètres dans l'URL
   useEffect(() => {
@@ -76,6 +83,37 @@ export default function CovoituragesPage() {
       setSuggestion(null);
     }
   };
+
+  // Calcul simple de la durée en utilisant uniquement l'heure de départ et d'arrivée
+  function getDureeHeuresSimple(covoit: Covoiturage) {
+    function toMinutes(heure: string) {
+      if (!heure) return NaN;
+      const [h, m] = heure.split(':');
+      return parseInt(h, 10) * 60 + parseInt(m, 10);
+    }
+    if (!covoit.heure_depart || !covoit.heure_arrivee) return null;
+    const dep = toMinutes(covoit.heure_depart);
+    const arr = toMinutes(covoit.heure_arrivee);
+    if (isNaN(dep) || isNaN(arr) || arr < dep) return null;
+    const diff = arr - dep;
+    return { h: Math.floor(diff / 60), m: diff % 60 };
+  }
+
+  // Application des filtres côté client
+  const filteredResults = results.filter(covoit => {
+    if (filtreEco && !covoit.ecologique) return false;
+    if (filtrePrix && covoit.prix_personne > parseFloat(filtrePrix)) return false;
+    if (
+      filtreNote &&
+      (covoit.chauffeur.note === null || covoit.chauffeur.note < parseInt(filtreNote, 10))
+    )
+      return false;
+    if (filtreDuree) {
+      const duree = getDureeHeuresSimple(covoit);
+      if (duree === null || duree.h > parseFloat(filtreDuree)) return false;
+    }
+    return true;
+  });
 
   return (
     <main className="max-w-3xl mx-auto py-10 px-4">
@@ -197,12 +235,35 @@ export default function CovoituragesPage() {
                 </div>
               </div>
             </div>
+            {/* Affichage durée suggestion */}
+            <div className="text-sm text-gray-700 mb-1">
+              Durée :{' '}
+              {(() => {
+                const duree = getDureeHeuresSimple(suggestion);
+                return duree ? `${duree.h}h${String(duree.m).padStart(2, '0')}` : 'NC';
+              })()}
+            </div>
           </div>
         </div>
       )}
-      {results.length > 0 && (
+      {/* Filtres US4 */}
+      {submitted && results.length > 0 && (
+        <CovoiturageFiltres
+          filtreEco={filtreEco}
+          setFiltreEco={setFiltreEco}
+          filtrePrix={filtrePrix}
+          setFiltrePrix={setFiltrePrix}
+          filtreDuree={filtreDuree}
+          setFiltreDuree={setFiltreDuree}
+          filtreNote={filtreNote}
+          setFiltreNote={setFiltreNote}
+          showFiltres={showFiltres}
+          setShowFiltres={setShowFiltres}
+        />
+      )}
+      {filteredResults.length > 0 && (
         <div className="flex flex-col gap-6">
-          {results.map((covoit, idx) => {
+          {filteredResults.map((covoit, idx) => {
             // Formatage des dates/heures pour affichage lisible
             const dateDep = covoit.date_depart ? new Date(covoit.date_depart) : null;
             const dateArr = covoit.date_arrivee ? new Date(covoit.date_arrivee) : null;
@@ -215,6 +276,9 @@ export default function CovoituragesPage() {
               covoit.heure_arrivee && covoit.heure_arrivee.length >= 5
                 ? covoit.heure_arrivee.slice(0, 5)
                 : covoit.heure_arrivee;
+            // Calcul de la durée pour affichage
+            const duree = getDureeHeuresSimple(covoit);
+            const dureeAffichee = duree ? `${duree.h}h${String(duree.m).padStart(2, '0')}` : 'NC';
             return (
               <div
                 key={idx}
@@ -240,6 +304,7 @@ export default function CovoituragesPage() {
                     Départ : {dateDep ? dateDep.toLocaleDateString('fr-FR') : ''} à {heureDep}{' '}
                     &bull; Arrivée : {dateArr ? dateArr.toLocaleDateString('fr-FR') : ''} à{' '}
                     {heureArr}
+                    &bull; Durée : {dureeAffichee}
                   </div>
                   {covoit.ecologique ? (
                     <span className="inline-flex items-center gap-1 bg-green-100 text-green-800 text-xs px-2 py-1 rounded font-semibold">
