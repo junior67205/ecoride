@@ -4,10 +4,12 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
 import CovoiturageFiltres from './CovoiturageFiltres';
+import Link from 'next/link';
 
 // Exemple de type pour un covoiturage
 
 type Covoiturage = {
+  id: number;
   chauffeur: {
     pseudo: string;
     photo: string;
@@ -27,12 +29,25 @@ const MOCK_COVOITURAGES: Covoiturage[] = [];
 
 export default function CovoituragesPage() {
   const searchParams = useSearchParams();
+
+  // Fonction utilitaire pour normaliser la date au format yyyy-mm-dd
+  function normalizeDate(dateStr: string | null): string {
+    if (!dateStr) return '';
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
+    if (dateStr.includes('T')) return dateStr.slice(0, 10);
+    if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateStr)) {
+      const [d, m, y] = dateStr.split('/');
+      return `${y}-${m}-${d}`;
+    }
+    return dateStr;
+  }
+
   const [depart, setDepart] = useState(searchParams.get('depart') || '');
   const [arrivee, setArrivee] = useState(searchParams.get('arrivee') || '');
-  const [date, setDate] = useState(searchParams.get('date') || '');
+  const [date, setDate] = useState(normalizeDate(searchParams.get('date')));
   const [results, setResults] = useState<Covoiturage[]>(MOCK_COVOITURAGES);
   const [submitted, setSubmitted] = useState(false);
-  const [suggestion, setSuggestion] = useState<Covoiturage | null>(null);
+  const [suggestions, setSuggestions] = useState<Covoiturage[]>([]);
   // Filtres US4
   const [filtreEco, setFiltreEco] = useState(false);
   const [filtrePrix, setFiltrePrix] = useState('');
@@ -45,7 +60,7 @@ export default function CovoituragesPage() {
     if (searchParams.get('depart') && searchParams.get('arrivee') && searchParams.get('date')) {
       setDepart(searchParams.get('depart') || '');
       setArrivee(searchParams.get('arrivee') || '');
-      setDate(searchParams.get('date') || '');
+      setDate(normalizeDate(searchParams.get('date')));
       // Simule la soumission du formulaire
       (async () => {
         setSubmitted(true);
@@ -59,10 +74,10 @@ export default function CovoituragesPage() {
           if (!res.ok) throw new Error('Erreur lors de la recherche');
           const data = await res.json();
           setResults(data.results || []);
-          setSuggestion(data.suggestion || null);
+          setSuggestions(data.suggestions || []);
         } catch {
           setResults([]);
-          setSuggestion(null);
+          setSuggestions([]);
         }
       })();
     }
@@ -77,10 +92,10 @@ export default function CovoituragesPage() {
       if (!res.ok) throw new Error('Erreur lors de la recherche');
       const data = await res.json();
       setResults(data.results || []);
-      setSuggestion(data.suggestion || null);
+      setSuggestions(data.suggestions || []);
     } catch {
       setResults([]);
-      setSuggestion(null);
+      setSuggestions([]);
     }
   };
 
@@ -115,6 +130,31 @@ export default function CovoituragesPage() {
     return true;
   });
 
+  // Fonction utilitaire pour formater la date en français
+  function formatDateFr(dateStr: string) {
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
+    if (!isNaN(d.getTime())) return d.toLocaleDateString('fr-FR');
+    // Si ce n'est pas un format ISO, on retourne tel quel
+    if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateStr)) return dateStr;
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+      const [y, m, d2] = dateStr.split('-');
+      return `${d2}/${m}/${y}`;
+    }
+    return dateStr;
+  }
+  function formatHeure(heure: string) {
+    if (!heure) return '';
+    // Si format ISO, extraire l'heure
+    if (heure.length > 5 && heure.includes('T')) {
+      const d = new Date(heure);
+      if (!isNaN(d.getTime()))
+        return d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    }
+    // Si format HH:mm:ss ou HH:mm
+    return heure.slice(0, 5);
+  }
+
   return (
     <main className="max-w-3xl mx-auto py-10 px-4">
       <h1 className="text-3xl font-bold text-primary mb-8 text-center">
@@ -143,7 +183,7 @@ export default function CovoituragesPage() {
         <input
           type="date"
           value={date}
-          onChange={e => setDate(e.target.value)}
+          onChange={e => setDate(normalizeDate(e.target.value))}
           className="input input-bordered px-4 py-2 rounded border text-gray-900"
           required
         />
@@ -156,93 +196,97 @@ export default function CovoituragesPage() {
       </form>
 
       {/* Résultats de recherche */}
-      {submitted && results.length === 0 && !suggestion && (
+      {submitted && results.length === 0 && !suggestions.length && (
         <div className="text-center text-gray-600 mt-8">
           <p>Aucun covoiturage trouvé pour votre recherche.</p>
           <p className="mt-2">Essayez de modifier la date ou la ville de départ/arrivée.</p>
         </div>
       )}
-      {submitted && results.length === 0 && suggestion && (
-        <div className="text-center text-gray-600 mt-8">
-          <p>Aucun covoiturage trouvé à cette date,</p>
-          <p className="mt-2">
-            mais un trajet est disponible le <b>{suggestion.date_depart}</b> à{' '}
-            <b>{suggestion.heure_depart?.slice(0, 5)}</b> :
-          </p>
-          <div className="flex flex-col gap-6 items-center mt-4">
-            {/* Affichage de la carte suggestion */}
-            <div className="bg-white rounded-lg shadow p-4 flex flex-col md:flex-row items-center gap-4 border border-primary-light max-w-xl mx-auto">
-              <Image
-                src={suggestion.chauffeur.photo}
-                alt={suggestion.chauffeur.pseudo}
-                width={64}
-                height={64}
-                className="w-16 h-16 rounded-full object-cover border"
-              />
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="font-bold text-primary">{suggestion.chauffeur.pseudo}</span>
-                  <span className="text-yellow-500">★ {suggestion.chauffeur.note}</span>
+      {submitted && results.length === 0 && suggestions.length > 0 && (
+        <div className="mt-8">
+          <div className="text-center text-gray-600 mb-4">
+            <p>Aucun covoiturage trouvé à cette date.</p>
+            <p className="mt-2 text-primary font-semibold">
+              Mais voici d&apos;autres dates où un trajet similaire est disponible :
+            </p>
+          </div>
+          <div className="flex flex-col gap-6">
+            {suggestions.map((sugg, idx) => (
+              <div
+                key={idx}
+                className="bg-white rounded-lg shadow p-4 flex flex-col md:flex-row items-center gap-4 border border-primary-light"
+              >
+                <Image
+                  src={sugg.chauffeur.photo}
+                  alt={sugg.chauffeur.pseudo}
+                  width={64}
+                  height={64}
+                  className="w-16 h-16 rounded-full object-cover border"
+                />
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="font-bold text-primary">{sugg.chauffeur.pseudo}</span>
+                    <span className="text-yellow-500">★ {sugg.chauffeur.note}</span>
+                  </div>
+                  <div className="text-sm text-gray-700 mb-1">
+                    {sugg.nb_place} place(s) restante(s) &bull; {sugg.prix_personne} € / pers
+                  </div>
+                  <div className="text-sm text-gray-700 mb-1">
+                    Départ : {formatDateFr(sugg.date_depart)} à {formatHeure(sugg.heure_depart)}{' '}
+                    &bull; Arrivée : {formatDateFr(sugg.date_arrivee)} à{' '}
+                    {formatHeure(sugg.heure_arrivee)} &bull; Durée :{' '}
+                    {(() => {
+                      const duree = getDureeHeuresSimple(sugg);
+                      return duree ? `${duree.h}h${String(duree.m).padStart(2, '0')}` : 'NC';
+                    })()}
+                  </div>
+                  {sugg.ecologique ? (
+                    <span className="inline-flex items-center gap-1 bg-green-100 text-green-800 text-xs px-2 py-1 rounded font-semibold">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-4 w-4"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      Trajet écologique
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded font-semibold">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-4 w-4"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      Trajet standard
+                    </span>
+                  )}
                 </div>
-                <div className="text-sm text-gray-700 mb-1">
-                  {suggestion.nb_place} place(s) restante(s) &bull; {suggestion.prix_personne} € /
-                  pers
-                </div>
-                <div className="text-sm text-gray-700 mb-1">
-                  Départ : {suggestion.date_depart} à {suggestion.heure_depart?.slice(0, 5)} &bull;
-                  Arrivée : {suggestion.date_arrivee} à {suggestion.heure_arrivee?.slice(0, 5)}
-                </div>
-                {suggestion.ecologique ? (
-                  <span className="inline-flex items-center gap-1 bg-green-100 text-green-800 text-xs px-2 py-1 rounded font-semibold">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-4 w-4"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                    Trajet écologique
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center gap-1 bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded font-semibold">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-4 w-4"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                    Trajet standard
-                  </span>
-                )}
                 <div className="flex gap-2 mt-2 md:mt-0">
                   <button className="btn btn-success px-4 py-2 rounded border border-green-600 text-white bg-green-600 hover:bg-green-700 transition">
                     Réserver
                   </button>
-                  <button className="btn btn-outline-primary px-4 py-2 rounded border border-primary text-primary hover:bg-primary hover:text-white transition">
+                  <Link
+                    href={`/covoiturages/${sugg.id}`}
+                    className="btn btn-outline-primary px-4 py-2 rounded border border-primary text-primary hover:bg-primary hover:text-white transition"
+                  >
                     Détail
-                  </button>
+                  </Link>
                 </div>
               </div>
-            </div>
-            {/* Affichage durée suggestion */}
-            <div className="text-sm text-gray-700 mb-1">
-              Durée :{' '}
-              {(() => {
-                const duree = getDureeHeuresSimple(suggestion);
-                return duree ? `${duree.h}h${String(duree.m).padStart(2, '0')}` : 'NC';
-              })()}
-            </div>
+            ))}
           </div>
         </div>
       )}
@@ -344,9 +388,12 @@ export default function CovoituragesPage() {
                   <button className="btn btn-success px-4 py-2 rounded border border-green-600 text-white bg-green-600 hover:bg-green-700 transition">
                     Réserver
                   </button>
-                  <button className="btn btn-outline-primary px-4 py-2 rounded border border-primary text-primary hover:bg-primary hover:text-white transition">
+                  <Link
+                    href={`/covoiturages/${covoit.id}`}
+                    className="btn btn-outline-primary px-4 py-2 rounded border border-primary text-primary hover:bg-primary hover:text-white transition"
+                  >
                     Détail
-                  </button>
+                  </Link>
                 </div>
               </div>
             );

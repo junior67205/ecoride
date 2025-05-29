@@ -2,6 +2,22 @@ import { NextRequest } from 'next/server';
 import mysql from 'mysql2/promise';
 import type { RowDataPacket } from 'mysql2';
 
+type Suggestion = {
+  id: number;
+  chauffeur: {
+    pseudo: string;
+    photo: string;
+    note: number | null;
+  };
+  nb_place: number;
+  prix_personne: number;
+  date_depart: string;
+  heure_depart: string;
+  date_arrivee: string;
+  heure_arrivee: string;
+  ecologique: boolean;
+};
+
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const depart = searchParams.get('depart');
@@ -40,6 +56,7 @@ export async function GET(req: NextRequest) {
   // Correction du typage pour rows
   const covoiturages = Array.isArray(rows)
     ? (rows as RowDataPacket[]).map(row => ({
+        id: row.covoiturage_id,
         chauffeur: {
           pseudo: row.pseudo,
           photo: row.photo ? `/uploads/${row.photo}` : '/default-user.png',
@@ -55,8 +72,8 @@ export async function GET(req: NextRequest) {
       }))
     : [];
 
-  // Si aucun covoiturage trouvé, chercher le prochain disponible
-  let suggestion = null;
+  // Si aucun covoiturage trouvé, chercher les prochains disponibles
+  let suggestions: Suggestion[] = [];
   if (covoiturages.length === 0) {
     const [nextRows] = await connection.execute(
       `SELECT c.*, u.pseudo, u.photo, 
@@ -70,12 +87,13 @@ export async function GET(req: NextRequest) {
          AND c.date_depart > ?
          AND c.nb_place > 0
        ORDER BY c.date_depart ASC, c.heure_depart ASC
-       LIMIT 1`,
+       LIMIT 3`, // On propose jusqu'à 3 suggestions
       [depart, arrivee, date]
     );
     if (Array.isArray(nextRows) && nextRows.length > 0) {
-      const row = nextRows[0] as RowDataPacket;
-      suggestion = {
+      const rowsArray = nextRows as RowDataPacket[];
+      suggestions = rowsArray.map(row => ({
+        id: row.covoiturage_id,
         chauffeur: {
           pseudo: row.pseudo,
           photo: row.photo ? `/uploads/${row.photo}` : '/default-user.png',
@@ -88,13 +106,13 @@ export async function GET(req: NextRequest) {
         date_arrivee: row.date_arrivee,
         heure_arrivee: row.heure_arrivee,
         ecologique: row.energie && ['electrique', 'hybride'].includes(row.energie.toLowerCase()),
-      };
+      }));
     }
   }
 
   await connection.end();
 
-  return new Response(JSON.stringify({ results: covoiturages, suggestion }), {
+  return new Response(JSON.stringify({ results: covoiturages, suggestions }), {
     status: 200,
     headers: { 'Content-Type': 'application/json' },
   });
