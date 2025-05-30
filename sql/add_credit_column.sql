@@ -1,0 +1,4 @@
+USE ecoride;
+
+ALTER TABLE utilisateur
+ADD COLUMN credit DECIMAL(10,2) DEFAULT 20.00 NOT NULL; 

@@ -1,25 +1,126 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "mysql"
-  url      = env("DATABASE_URL")
+  url      = "mysql://root@localhost:3306/ecoride"
 }
 
-// Exemple de modèle pour les utilisateurs
-model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  name      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model avis {
+  avis_id        Int          @id @default(autoincrement())
+  commentaire    String?      @db.VarChar(50)
+  note           String?      @db.VarChar(50)
+  statut         String?      @db.VarChar(50)
+  utilisateur_id Int?
+  utilisateur    utilisateur? @relation(fields: [utilisateur_id], references: [utilisateur_id], onDelete: NoAction, onUpdate: NoAction, map: "avis_ibfk_1")
+
+  @@index([utilisateur_id], map: "utilisateur_id")
 }
 
-// Vous pouvez ajouter d'autres modèles ici selon vos besoins
+model configuration {
+  id_configuration        Int                       @id @default(autoincrement())
+  configuration_parametre configuration_parametre[]
+}
+
+model configuration_parametre {
+  id_configuration Int
+  parametre_id     Int
+  configuration    configuration @relation(fields: [id_configuration], references: [id_configuration], onDelete: NoAction, onUpdate: NoAction, map: "configuration_parametre_ibfk_1")
+  parametre        parametre     @relation(fields: [parametre_id], references: [parametre_id], onDelete: NoAction, onUpdate: NoAction, map: "configuration_parametre_ibfk_2")
+
+  @@id([id_configuration, parametre_id])
+  @@index([parametre_id], map: "parametre_id")
+}
+
+model covoiturage {
+  covoiturage_id Int          @id @default(autoincrement())
+  date_depart    DateTime?    @db.Date
+  heure_depart   DateTime?    @db.Time(0)
+  lieu_depart    String?      @db.VarChar(50)
+  date_arrivee   DateTime?    @db.Date
+  heure_arrivee  String?      @db.VarChar(50)
+  lieu_arrivee   String?      @db.VarChar(50)
+  statut         String?      @db.VarChar(50)
+  nb_place       Int?
+  prix_personne  Float?       @db.Float
+  voiture_id     Int?
+  utilisateur_id Int?
+  voiture        voiture?     @relation(fields: [voiture_id], references: [voiture_id], onDelete: NoAction, onUpdate: NoAction, map: "covoiturage_ibfk_1")
+  utilisateur    utilisateur? @relation(fields: [utilisateur_id], references: [utilisateur_id], onDelete: NoAction, onUpdate: NoAction, map: "covoiturage_ibfk_2")
+  participation  participation[]
+
+  @@index([utilisateur_id], map: "utilisateur_id")
+  @@index([voiture_id], map: "voiture_id")
+}
+
+model marque {
+  marque_id Int       @id @default(autoincrement())
+  libelle   String?   @db.VarChar(50)
+  voiture   voiture[]
+}
+
+model parametre {
+  parametre_id            Int                       @id @default(autoincrement())
+  propriete               String?                   @db.VarChar(50)
+  valeur                  String?                   @db.VarChar(50)
+  configuration_parametre configuration_parametre[]
+}
+
+model role {
+  role_id     Int           @id @default(autoincrement())
+  libelle     String?       @db.VarChar(50)
+  utilisateur utilisateur[]
+}
+
+model utilisateur {
+  utilisateur_id Int           @id @default(autoincrement())
+  civilite       String?       @db.VarChar(10)
+  nom            String?       @db.VarChar(50)
+  prenom         String?       @db.VarChar(50)
+  email          String?       @unique(map: "email") @db.VarChar(50)
+  password       String?       @db.VarChar(50)
+  telephone      String?       @db.VarChar(50)
+  adresse        String?       @db.VarChar(50)
+  date_naissance String?       @db.VarChar(50)
+  photo          Bytes?        @db.Blob
+  pseudo         String?       @db.VarChar(50)
+  role_id        Int?
+  credit         Decimal       @default(20.00) @db.Decimal(10, 2)
+  avis           avis[]
+  covoiturage    covoiturage[]
+  participation  participation[]
+  role           role?         @relation(fields: [role_id], references: [role_id], onDelete: NoAction, onUpdate: NoAction, map: "utilisateur_ibfk_1")
+  voiture        voiture[]
+
+  @@index([role_id], map: "role_id")
+}
+
+model voiture {
+  voiture_id                    Int           @id @default(autoincrement())
+  modele                        String?       @db.VarChar(50)
+  immatriculation               String?       @db.VarChar(50)
+  energie                       String?       @db.VarChar(50)
+  couleur                       String?       @db.VarChar(50)
+  date_premiere_immatriculation String?       @db.VarChar(50)
+  marque_id                     Int?
+  utilisateur_id                Int?
+  covoiturage                   covoiturage[]
+  marque                        marque?       @relation(fields: [marque_id], references: [marque_id], onDelete: NoAction, onUpdate: NoAction, map: "voiture_ibfk_1")
+  utilisateur                   utilisateur?  @relation(fields: [utilisateur_id], references: [utilisateur_id], onDelete: NoAction, onUpdate: NoAction, map: "voiture_ibfk_2")
+
+  @@index([marque_id], map: "marque_id")
+  @@index([utilisateur_id], map: "utilisateur_id")
+}
+
+model participation {
+  participation_id Int           @id @default(autoincrement())
+  utilisateur_id   Int
+  covoiturage_id   Int
+  date_participation DateTime   @default(now())
+
+  utilisateur      utilisateur  @relation(fields: [utilisateur_id], references: [utilisateur_id])
+  covoiturage      covoiturage  @relation(fields: [covoiturage_id], references: [covoiturage_id])
+
+  @@unique([utilisateur_id, covoiturage_id])
+}

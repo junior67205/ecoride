@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
+import ParticiperButton from '@/components/ParticiperButton';
 
 export default async function CovoiturageDetailPage({ params }: { params: { id: string } }) {
   // Utilise la variable d'environnement pour l'URL de base
@@ -136,6 +137,13 @@ export default async function CovoiturageDetailPage({ params }: { params: { id: 
             Trajet standard
           </span>
         )}
+        <div className="mt-4">
+          <ParticiperButton
+            covoiturageId={covoit.id}
+            nbPlaces={covoit.nb_place}
+            prixPersonne={covoit.prix_personne}
+          />
+        </div>
       </section>
       {/* Véhicule */}
       <section className="mb-8">

@@ -33,7 +33,8 @@ CREATE TABLE utilisateur (
   photo BLOB,
   pseudo VARCHAR(50),
   role_id INT,
-  FOREIGN KEY (role_id) REFERENCES role(role_id)
+  FOREIGN KEY (role_id) REFERENCES role(role_id),
+  credit DECIMAL(10,2) DEFAULT 20
 );
 
 -- Table avis
@@ -92,3 +93,12 @@ CREATE TABLE configuration_parametre (
   FOREIGN KEY (id_configuration) REFERENCES configuration(id_configuration),
   FOREIGN KEY (parametre_id) REFERENCES parametre(parametre_id)
 ); 
+
+-- Exemple d'insertion d'utilisateur avec crédit par défaut
+INSERT INTO utilisateur (pseudo, email, password, credit)
+VALUES ('Jean', 'jean@mail.com', 'motdepasse', 20),
+       ('Alice', 'alice@mail.com', 'alicepass', 35),
+       ('Bob', 'bob@mail.com', 'bobpass', 5),
+       ('Claire', 'claire@mail.com', 'clairepass', 0),
+       ('Admin', 'admin@mail.com', 'adminpass', 100);
+-- Le crédit est défini pour chaque utilisateur 

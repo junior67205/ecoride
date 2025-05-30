@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Inter, Roboto } from 'next/font/google';
 import './globals.css';
 import Navbar from '@/components/Navbar';
+import ClientLayout from './ClientLayout';
 
 const inter = Inter({
   variable: '--font-inter',
@@ -29,7 +30,7 @@ export default function RootLayout({
     <html lang="fr" className={`${inter.variable} ${roboto.variable}`}>
       <body className="font-inter bg-background text-text antialiased">
         <Navbar />
-        {children}
+        <ClientLayout>{children}</ClientLayout>
       </body>
     </html>
   );

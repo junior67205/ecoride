@@ -276,7 +276,7 @@ export default function CovoituragesPage() {
                 </div>
                 <div className="flex gap-2 mt-2 md:mt-0">
                   <button className="btn btn-success px-4 py-2 rounded border border-green-600 text-white bg-green-600 hover:bg-green-700 transition">
-                    Réserver
+                    Participer
                   </button>
                   <Link
                     href={`/covoiturages/${sugg.id}`}
@@ -386,7 +386,7 @@ export default function CovoituragesPage() {
                 </div>
                 <div className="flex gap-2 mt-2 md:mt-0">
                   <button className="btn btn-success px-4 py-2 rounded border border-green-600 text-white bg-green-600 hover:bg-green-700 transition">
-                    Réserver
+                    Participer
                   </button>
                   <Link
                     href={`/covoiturages/${covoit.id}`}
