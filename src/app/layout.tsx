@@ -29,8 +29,10 @@ export default function RootLayout({
   return (
     <html lang="fr" className={`${inter.variable} ${roboto.variable}`}>
       <body className="font-inter bg-background text-text antialiased">
-        <Navbar />
-        <ClientLayout>{children}</ClientLayout>
+        <ClientLayout>
+          <Navbar />
+          {children}
+        </ClientLayout>
       </body>
     </html>
   );

@@ -2,9 +2,11 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import { useSession, signOut } from 'next-auth/react';
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const { data: session } = useSession();
 
   return (
     <nav className="bg-white border-b border-primary-light shadow-sm sticky top-0 z-50">
@@ -24,12 +26,40 @@ export default function Navbar() {
           >
             Covoiturages
           </Link>
-          <Link href="/connexion" className="text-text hover:text-primary font-medium transition">
-            Connexion
-          </Link>
           <Link href="/contact" className="text-text hover:text-primary font-medium transition">
             Contact
           </Link>
+          {session ? (
+            <>
+              <Link
+                href="/mon-espace"
+                className="text-text hover:text-primary font-medium transition"
+              >
+                Mon espace
+              </Link>
+              <button
+                onClick={() => signOut({ callbackUrl: '/connexion' })}
+                className="text-text hover:text-primary font-medium transition bg-transparent border-none cursor-pointer"
+              >
+                Déconnexion
+              </button>
+            </>
+          ) : (
+            <>
+              <Link
+                href="/connexion"
+                className="text-text hover:text-primary font-medium transition"
+              >
+                Connexion
+              </Link>
+              <Link
+                href="/inscription"
+                className="text-text hover:text-primary font-medium transition"
+              >
+                Inscription
+              </Link>
+            </>
+          )}
         </div>
         {/* Menu mobile burger */}
         <button
@@ -70,19 +100,49 @@ export default function Navbar() {
             Covoiturages
           </Link>
           <Link
-            href="/connexion"
-            className="text-text hover:text-primary font-medium transition"
-            onClick={() => setMenuOpen(false)}
-          >
-            Connexion
-          </Link>
-          <Link
             href="/contact"
             className="text-text hover:text-primary font-medium transition"
             onClick={() => setMenuOpen(false)}
           >
             Contact
           </Link>
+          {session ? (
+            <>
+              <Link
+                href="/mon-espace"
+                className="text-text hover:text-primary font-medium transition"
+                onClick={() => setMenuOpen(false)}
+              >
+                Mon espace
+              </Link>
+              <button
+                onClick={() => {
+                  setMenuOpen(false);
+                  signOut({ callbackUrl: '/connexion' });
+                }}
+                className="text-text hover:text-primary font-medium transition bg-transparent border-none cursor-pointer text-left w-full py-2"
+              >
+                Déconnexion
+              </button>
+            </>
+          ) : (
+            <>
+              <Link
+                href="/connexion"
+                className="text-text hover:text-primary font-medium transition"
+                onClick={() => setMenuOpen(false)}
+              >
+                Connexion
+              </Link>
+              <Link
+                href="/inscription"
+                className="text-text hover:text-primary font-medium transition"
+                onClick={() => setMenuOpen(false)}
+              >
+                Inscription
+              </Link>
+            </>
+          )}
         </div>
       )}
     </nav>

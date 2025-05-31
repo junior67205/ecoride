@@ -79,7 +79,7 @@ model utilisateur {
   nom            String?       @db.VarChar(50)
   prenom         String?       @db.VarChar(50)
   email          String?       @unique(map: "email") @db.VarChar(50)
-  password       String?       @db.VarChar(50)
+  password       String?       @db.VarChar(255)
   telephone      String?       @db.VarChar(50)
   adresse        String?       @db.VarChar(50)
   date_naissance String?       @db.VarChar(50)
