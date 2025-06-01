@@ -38,7 +38,7 @@ export default function Navbar() {
                 Mon espace
               </Link>
               <button
-                onClick={() => signOut({ callbackUrl: '/connexion' })}
+                onClick={() => signOut({ callbackUrl: '/' })}
                 className="text-text hover:text-primary font-medium transition bg-transparent border-none cursor-pointer"
               >
                 Déconnexion
@@ -118,7 +118,7 @@ export default function Navbar() {
               <button
                 onClick={() => {
                   setMenuOpen(false);
-                  signOut({ callbackUrl: '/connexion' });
+                  signOut({ callbackUrl: '/' });
                 }}
                 className="text-text hover:text-primary font-medium transition bg-transparent border-none cursor-pointer text-left w-full py-2"
               >

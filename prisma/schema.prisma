@@ -83,8 +83,9 @@ model utilisateur {
   telephone      String?       @db.VarChar(50)
   adresse        String?       @db.VarChar(50)
   date_naissance String?       @db.VarChar(50)
-  photo          Bytes?        @db.Blob
+  photo          String?       @db.VarChar(255)
   pseudo         String?       @db.VarChar(50)
+  type_utilisateur String?     @db.VarChar(20)
   role_id        Int?
   credit         Decimal       @default(20.00) @db.Decimal(10, 2)
   avis           avis[]
@@ -105,6 +106,8 @@ model voiture {
   date_premiere_immatriculation String?       @db.VarChar(50)
   marque_id                     Int?
   utilisateur_id                Int?
+  nb_place                     Int?
+  preferences                   String?       @db.Text
   covoiturage                   covoiturage[]
   marque                        marque?       @relation(fields: [marque_id], references: [marque_id], onDelete: NoAction, onUpdate: NoAction, map: "voiture_ibfk_1")
   utilisateur                   utilisateur?  @relation(fields: [utilisateur_id], references: [utilisateur_id], onDelete: NoAction, onUpdate: NoAction, map: "voiture_ibfk_2")

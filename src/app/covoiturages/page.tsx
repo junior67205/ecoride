@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
 import CovoiturageFiltres from './CovoiturageFiltres';
 import Link from 'next/link';
+import ParticiperButton from '@/components/ParticiperButton';
 
 // Exemple de type pour un covoiturage
 
@@ -275,9 +276,11 @@ export default function CovoituragesPage() {
                   )}
                 </div>
                 <div className="flex gap-2 mt-2 md:mt-0">
-                  <button className="btn btn-success px-4 py-2 rounded border border-green-600 text-white bg-green-600 hover:bg-green-700 transition">
-                    Participer
-                  </button>
+                  <ParticiperButton
+                    covoiturageId={sugg.id}
+                    nbPlaces={sugg.nb_place}
+                    prixPersonne={sugg.prix_personne}
+                  />
                   <Link
                     href={`/covoiturages/${sugg.id}`}
                     className="btn btn-outline-primary px-4 py-2 rounded border border-primary text-primary hover:bg-primary hover:text-white transition"
@@ -385,9 +388,11 @@ export default function CovoituragesPage() {
                   )}
                 </div>
                 <div className="flex gap-2 mt-2 md:mt-0">
-                  <button className="btn btn-success px-4 py-2 rounded border border-green-600 text-white bg-green-600 hover:bg-green-700 transition">
-                    Participer
-                  </button>
+                  <ParticiperButton
+                    covoiturageId={covoit.id}
+                    nbPlaces={covoit.nb_place}
+                    prixPersonne={covoit.prix_personne}
+                  />
                   <Link
                     href={`/covoiturages/${covoit.id}`}
                     className="btn btn-outline-primary px-4 py-2 rounded border border-primary text-primary hover:bg-primary hover:text-white transition"
