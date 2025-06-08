@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useUser } from '@/app/context/UserContext';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 
@@ -15,11 +16,12 @@ export default function ParticiperButton({
   nbPlaces,
   prixPersonne,
 }: ParticiperButtonProps) {
-  const { status } = useSession();
-  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showConfirm, setShowConfirm] = useState(false);
+  const { refreshProfil, refreshHistorique } = useUser();
+  const { status } = useSession();
+  const router = useRouter();
 
   const handleClick = () => {
     if (status === 'unauthenticated') {
@@ -44,15 +46,20 @@ export default function ParticiperButton({
           'Content-Type': 'application/json',
         },
       });
+
       const data = await response.json();
+
       if (!response.ok) {
         if (response.status === 401) {
           router.push('/connexion?callbackUrl=' + encodeURIComponent(window.location.href));
           return;
         }
-        throw new Error(data.error || 'Une erreur est survenue');
+        throw new Error(data.error || 'Erreur lors de la réservation');
       }
-      router.refresh();
+
+      // Rafraîchir les crédits et l'historique
+      await Promise.all([refreshProfil(), refreshHistorique()]);
+
       router.push('/mon-compte?message=participation_success');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Une erreur est survenue');

@@ -3,6 +3,7 @@ import { Inter, Roboto } from 'next/font/google';
 import './globals.css';
 import Navbar from '@/components/Navbar';
 import ClientLayout from './ClientLayout';
+import { UserProvider } from './context/UserContext';
 
 const inter = Inter({
   variable: '--font-inter',
@@ -29,10 +30,12 @@ export default function RootLayout({
   return (
     <html lang="fr" className={`${inter.variable} ${roboto.variable}`}>
       <body className="font-inter bg-background text-text antialiased">
-        <ClientLayout>
-          <Navbar />
-          {children}
-        </ClientLayout>
+        <UserProvider>
+          <ClientLayout>
+            <Navbar />
+            {children}
+          </ClientLayout>
+        </UserProvider>
       </body>
     </html>
   );

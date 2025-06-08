@@ -43,3 +43,49 @@ export type Marque = {
   marque_id: number;
   libelle: string | null;
 };
+
+export type Participant = {
+  id: number;
+  pseudo: string;
+  photo: string | null;
+  email: string;
+  date_participation: string;
+};
+
+export type Covoiturage = {
+  id: number;
+  lieu_depart: string;
+  lieu_arrivee: string;
+  date_depart: string;
+  heure_depart: string;
+  date_arrivee: string;
+  heure_arrivee: string;
+  prix_personne: number;
+  nb_place: number;
+  statut: string;
+  role: 'chauffeur' | 'passager';
+  voiture: {
+    modele: string;
+    marque: string | null;
+    immatriculation: string;
+  } | null;
+  chauffeur: {
+    id: number;
+    pseudo: string;
+    photo: string | null;
+    email: string;
+  } | null;
+  participants: Participant[];
+};
+
+export type VoyageForm = {
+  depart: string;
+  arrivee: string;
+  dateDepart: string;
+  heureDepart: string;
+  dateArrivee: string;
+  heureArrivee: string;
+  prix: string;
+  vehiculeId: string;
+  nb_place: string;
+};

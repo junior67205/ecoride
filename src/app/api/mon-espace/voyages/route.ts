@@ -11,31 +11,72 @@ export async function POST(req: NextRequest) {
     return new Response(JSON.stringify({ error: 'Non autorisé' }), { status: 401 });
   }
 
-  const data = await req.json();
-  const { depart, arrivee, prix, vehiculeId } = data;
+  const {
+    depart,
+    arrivee,
+    dateDepart,
+    heureDepart,
+    dateArrivee,
+    heureArrivee,
+    prix,
+    vehiculeId,
+    nb_place,
+  } = await req.json();
 
-  if (!depart || !arrivee || !prix || !vehiculeId) {
-    return new Response(JSON.stringify({ error: 'Tous les champs sont obligatoires.' }), {
+  // Vérifier que tous les champs requis sont présents
+  if (
+    !depart ||
+    !arrivee ||
+    !dateDepart ||
+    !heureDepart ||
+    !dateArrivee ||
+    !heureArrivee ||
+    !prix ||
+    !vehiculeId
+  ) {
+    return new Response(JSON.stringify({ error: 'Tous les champs sont obligatoires' }), {
       status: 400,
     });
   }
+
+  // Vérifier que le prix est supérieur à 2 crédits
   if (Number(prix) <= 2) {
-    return new Response(JSON.stringify({ error: 'Le prix doit être supérieur à 2 crédits.' }), {
+    return new Response(JSON.stringify({ error: 'Le prix doit être supérieur à 2 crédits' }), {
       status: 400,
     });
   }
 
-  // Vérifier que le véhicule appartient à l'utilisateur
-  const voiture = await prisma.voiture.findFirst({
-    where: {
-      voiture_id: Number(vehiculeId),
-      utilisateur_id: Number(session.user.id),
-    },
+  // Récupérer la voiture
+  const voiture = await prisma.voiture.findUnique({
+    where: { voiture_id: Number(vehiculeId) },
   });
+
   if (!voiture) {
-    return new Response(JSON.stringify({ error: 'Véhicule non trouvé ou non autorisé.' }), {
-      status: 403,
-    });
+    return new Response(JSON.stringify({ error: 'Véhicule non trouvé' }), { status: 404 });
+  }
+
+  // Calculer le nombre de places disponibles par défaut (capacité du véhicule moins le conducteur)
+  const nbPlacesParDefaut = Math.max(0, (voiture.nb_place || 0) - 1);
+
+  // Si le nombre de places est spécifié, vérifier qu'il est valide
+  if (nb_place) {
+    if (Number(nb_place) <= 0) {
+      return new Response(
+        JSON.stringify({ error: 'Le nombre de places doit être supérieur à 0' }),
+        {
+          status: 400,
+        }
+      );
+    }
+    // Vérifier que le nombre de places ne dépasse pas la capacité totale du véhicule
+    if (Number(nb_place) > (voiture.nb_place || 0)) {
+      return new Response(
+        JSON.stringify({
+          error: `Le nombre de places ne peut pas dépasser ${voiture.nb_place} (capacité totale du véhicule)`,
+        }),
+        { status: 400 }
+      );
+    }
   }
 
   // Créer le covoiturage
@@ -45,10 +86,14 @@ export async function POST(req: NextRequest) {
         lieu_depart: depart,
         lieu_arrivee: arrivee,
         prix_personne: Number(prix),
-        nb_place: voiture.nb_place || 1,
+        nb_place: nb_place ? Number(nb_place) : nbPlacesParDefaut,
         voiture: { connect: { voiture_id: voiture.voiture_id } },
         utilisateur: { connect: { utilisateur_id: Number(session.user.id) } },
         statut: 'ouvert',
+        date_depart: dateDepart ? new Date(dateDepart) : undefined,
+        heure_depart: heureDepart || undefined,
+        date_arrivee: dateArrivee ? new Date(dateArrivee) : undefined,
+        heure_arrivee: heureArrivee || undefined,
       },
     });
     return new Response(JSON.stringify({ message: 'Voyage créé', covoiturage }), { status: 201 });

@@ -1,14 +1,56 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import ParticiperButton from '@/components/ParticiperButton';
 
-export default async function CovoiturageDetailPage({ params }: { params: { id: string } }) {
-  // Utilise la variable d'environnement pour l'URL de base
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL!;
-  const res = await fetch(`${baseUrl}/api/covoiturages/${params.id}`, { cache: 'no-store' });
-  if (!res.ok) return notFound();
-  const data = await res.json();
-  const covoit = data.covoiturage;
+type CovoiturageDetail = {
+  id: number;
+  chauffeur: {
+    pseudo: string;
+    photo: string;
+    note: number;
+    civilite: string;
+    prenom: string;
+    nom: string;
+  };
+  nb_place: number;
+  prix_personne: number;
+  date_depart: string;
+  heure_depart: string;
+  date_arrivee: string;
+  heure_arrivee: string;
+  lieu_depart: string;
+  lieu_arrivee: string;
+  voiture: { marque: string; modele: string; energie: string; immatriculation: string };
+  avis: Array<{ note: number; commentaire: string }>;
+  preferences: { fumeur: boolean; animaux: boolean; musique: boolean; girl_only: boolean };
+};
+
+export default function CovoiturageDetailPage({ params }: { params: { id: string } }) {
+  const [covoit, setCovoit] = useState<CovoiturageDetail | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchCovoiturage = async () => {
+      try {
+        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL!;
+        const res = await fetch(`${baseUrl}/api/covoiturages/${params.id}`, { cache: 'no-store' });
+        if (!res.ok) throw new Error('Covoiturage non trouvé');
+        const data = await res.json();
+        setCovoit(data.covoiturage);
+      } catch (error) {
+        console.error('Erreur:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCovoiturage();
+  }, [params.id]);
+
+  if (loading) return <div>Chargement...</div>;
+  if (!covoit) return notFound();
 
   // Formatage date/heure comme dans la liste
   function formatDateFr(dateStr: string) {

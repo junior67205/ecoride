@@ -49,7 +49,8 @@ export async function GET(req: NextRequest) {
      WHERE TRIM(LOWER(c.lieu_depart)) = TRIM(LOWER(?))
        AND TRIM(LOWER(c.lieu_arrivee)) = TRIM(LOWER(?))
        AND c.date_depart = ?
-       AND c.nb_place > 0`,
+       AND c.nb_place > 0
+       AND c.statut != 'annule'`,
     [depart, arrivee, date]
   );
 
@@ -86,6 +87,7 @@ export async function GET(req: NextRequest) {
          AND TRIM(LOWER(c.lieu_arrivee)) = TRIM(LOWER(?))
          AND c.date_depart > ?
          AND c.nb_place > 0
+         AND c.statut != 'annule'
        ORDER BY c.date_depart ASC, c.heure_depart ASC
        LIMIT 3`, // On propose jusqu'à 3 suggestions
       [depart, arrivee, date]

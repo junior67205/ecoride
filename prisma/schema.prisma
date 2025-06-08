@@ -36,7 +36,7 @@ model configuration_parametre {
 model covoiturage {
   covoiturage_id Int          @id @default(autoincrement())
   date_depart    DateTime?    @db.Date
-  heure_depart   DateTime?    @db.Time(0)
+  heure_depart   String?      @db.VarChar(50)
   lieu_depart    String?      @db.VarChar(50)
   date_arrivee   DateTime?    @db.Date
   heure_arrivee  String?      @db.VarChar(50)

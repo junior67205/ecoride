@@ -2,8 +2,10 @@ import { NextRequest } from 'next/server';
 import mysql from 'mysql2/promise';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import type { RowDataPacket } from 'mysql2';
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, context: { params: { id: string } }) {
+  const { params } = context;
   const session = await getServerSession(authOptions);
 
   // Vérifier si l'utilisateur est connecté
@@ -90,6 +92,11 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     await connection.beginTransaction();
 
     try {
+      // Calculer la répartition des crédits
+      const prixTotal = covoiturage.prix_personne;
+      const creditPlateforme = 2; // La plateforme reçoit toujours 2 crédits
+      const creditChauffeur = prixTotal - creditPlateforme; // Le reste va au chauffeur
+
       // Mettre à jour le nombre de places
       await connection.execute(
         'UPDATE covoiturage SET nb_place = nb_place - 1 WHERE covoiturage_id = ?',
@@ -99,14 +106,27 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       // Déduire le crédit de l'utilisateur
       await connection.execute(
         'UPDATE utilisateur SET credit = credit - ? WHERE utilisateur_id = ?',
-        [covoiturage.prix_personne, session.user.id]
+        [prixTotal, session.user.id]
       );
 
-      // Ajouter le crédit au conducteur
+      // Ajouter le crédit au conducteur (prix total - 2 crédits)
       await connection.execute(
         'UPDATE utilisateur SET credit = credit + ? WHERE utilisateur_id = ?',
-        [covoiturage.prix_personne, covoiturage.utilisateur_id]
+        [creditChauffeur, covoiturage.utilisateur_id]
       );
+
+      // Ajouter le crédit à la plateforme (toujours 2 crédits)
+      // Récupérer l'ID de l'admin
+      const [adminRows] = await connection.execute(
+        'SELECT utilisateur_id FROM utilisateur WHERE type_utilisateur = "admin" LIMIT 1'
+      );
+      const adminId = (adminRows as RowDataPacket[])[0]?.utilisateur_id;
+      if (adminId) {
+        await connection.execute(
+          'UPDATE utilisateur SET credit = credit + ? WHERE utilisateur_id = ?',
+          [creditPlateforme, adminId]
+        );
+      }
 
       // Enregistrer la participation du passager
       await connection.execute(
@@ -120,7 +140,9 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       return new Response(
         JSON.stringify({
           message: 'Participation réussie',
-          newCredit: userCredit - covoiturage.prix_personne,
+          newCredit: userCredit - prixTotal,
+          creditChauffeur,
+          creditPlateforme,
         }),
         { status: 200 }
       );

@@ -1,12 +1,17 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const { data: session } = useSession();
+
+  // Rafraîchir les crédits au chargement de la page
+  useEffect(() => {
+    // refreshProfil();
+  }, []);
 
   return (
     <nav className="bg-white border-b border-primary-light shadow-sm sticky top-0 z-50">
