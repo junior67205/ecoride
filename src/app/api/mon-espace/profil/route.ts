@@ -8,7 +8,10 @@ const prisma = new PrismaClient();
 export async function GET() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
-    return new Response(JSON.stringify({ error: 'Non autorisé' }), { status: 401 });
+    return new Response(JSON.stringify({ error: 'Non autorisé' }), {
+      status: 401,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
   const user = await prisma.utilisateur.findUnique({
     where: { utilisateur_id: Number(session.user.id) },
@@ -27,15 +30,24 @@ export async function GET() {
     } satisfies Prisma.utilisateurSelect,
   });
   if (!user) {
-    return new Response(JSON.stringify({ error: 'Utilisateur non trouvé' }), { status: 404 });
+    return new Response(JSON.stringify({ error: 'Utilisateur non trouvé' }), {
+      status: 404,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
-  return new Response(JSON.stringify(user), { status: 200 });
+  return new Response(JSON.stringify(user), {
+    status: 200,
+    headers: { 'Content-Type': 'application/json' },
+  });
 }
 
 export async function PATCH(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
-    return new Response(JSON.stringify({ error: 'Non autorisé' }), { status: 401 });
+    return new Response(JSON.stringify({ error: 'Non autorisé' }), {
+      status: 401,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 
   const data = await req.json();
@@ -53,14 +65,20 @@ export async function PATCH(req: NextRequest) {
   ) {
     return new Response(
       JSON.stringify({ error: 'Tous les champs obligatoires doivent être remplis.' }),
-      { status: 400 }
+      {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      }
     );
   }
 
   // Validation du format email
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(data.email)) {
-    return new Response(JSON.stringify({ error: "Format d'email invalide." }), { status: 400 });
+    return new Response(JSON.stringify({ error: "Format d'email invalide." }), {
+      status: 400,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 
   // Validation du format téléphone (10 chiffres uniquement)
@@ -70,6 +88,7 @@ export async function PATCH(req: NextRequest) {
       JSON.stringify({ error: 'Le numéro de téléphone doit contenir exactement 10 chiffres.' }),
       {
         status: 400,
+        headers: { 'Content-Type': 'application/json' },
       }
     );
   }
@@ -91,18 +110,25 @@ export async function PATCH(req: NextRequest) {
       } satisfies Prisma.utilisateurUpdateInput,
     });
 
-    return new Response(JSON.stringify(updatedUser), { status: 200 });
+    return new Response(JSON.stringify(updatedUser), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === 'P2002') {
         return new Response(JSON.stringify({ error: 'Cet email ou ce pseudo est déjà utilisé.' }), {
           status: 400,
+          headers: { 'Content-Type': 'application/json' },
         });
       }
     }
     return new Response(
       JSON.stringify({ error: 'Une erreur est survenue lors de la mise à jour du profil.' }),
-      { status: 500 }
+      {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      }
     );
   }
 }

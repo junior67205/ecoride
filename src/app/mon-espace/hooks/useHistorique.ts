@@ -10,6 +10,10 @@ export function useHistorique() {
     setLoading(true);
     try {
       const response = await fetch('/api/mon-espace/historique');
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error('Réponse du serveur invalide (pas du JSON)');
+      }
       const data = await response.json();
       if (!response.ok) {
         throw new Error(data.error || "Erreur lors de la récupération de l'historique");

@@ -20,7 +20,27 @@ export function useProfil() {
 
   useEffect(() => {
     fetch('/api/mon-espace/profil')
-      .then(res => res.json())
+      .then(res => {
+        if (res.status === 401) {
+          const contentType = res.headers.get('content-type');
+          if (
+            !contentType ||
+            (!contentType.includes('application/json') && !contentType.includes('text/plain'))
+          ) {
+            throw new Error('Réponse du serveur invalide (pas du JSON)');
+          }
+          return res.json().then(() => {
+            window.location.href =
+              '/connexion?callbackUrl=' + encodeURIComponent(window.location.href);
+            return Promise.reject();
+          });
+        }
+        const contentType = res.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+          throw new Error('Réponse du serveur invalide (pas du JSON)');
+        }
+        return res.json();
+      })
       .then(data => {
         if (!data.error) {
           setProfil({
@@ -37,6 +57,9 @@ export function useProfil() {
             credit: data.credit ?? 0,
           });
         }
+      })
+      .catch(err => {
+        setProfilError(err instanceof Error ? err.message : 'Erreur réseau ou serveur.');
       });
   }, []);
 
@@ -86,6 +109,22 @@ export function useProfil() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(profil),
       });
+      if (res.status === 401) {
+        const contentType = res.headers.get('content-type');
+        if (
+          !contentType ||
+          (!contentType.includes('application/json') && !contentType.includes('text/plain'))
+        ) {
+          throw new Error('Réponse du serveur invalide (pas du JSON)');
+        }
+        await res.json();
+        window.location.href = '/connexion?callbackUrl=' + encodeURIComponent(window.location.href);
+        return;
+      }
+      const contentType = res.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error('Réponse du serveur invalide (pas du JSON)');
+      }
       const data = await res.json();
       if (res.ok) {
         setProfilMessage(data.message || 'Profil mis à jour avec succès.');

@@ -26,6 +26,22 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const refreshProfil = async () => {
     try {
       const res = await fetch('/api/mon-espace/profil');
+      if (res.status === 401) {
+        const contentType = res.headers.get('content-type');
+        if (
+          !contentType ||
+          (!contentType.includes('application/json') && !contentType.includes('text/plain'))
+        ) {
+          throw new Error('Réponse du serveur invalide (pas du JSON)');
+        }
+        await res.json();
+        window.location.href = '/connexion?callbackUrl=' + encodeURIComponent(window.location.href);
+        return;
+      }
+      const contentType = res.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error('Réponse du serveur invalide (pas du JSON)');
+      }
       const data = await res.json();
       if (!data.error) {
         setCredit(data.credit);
@@ -41,6 +57,22 @@ export function UserProvider({ children }: { children: ReactNode }) {
     setHistoriqueError(null);
     try {
       const response = await fetch('/api/mon-espace/historique');
+      if (response.status === 401) {
+        const contentType = response.headers.get('content-type');
+        if (
+          !contentType ||
+          (!contentType.includes('application/json') && !contentType.includes('text/plain'))
+        ) {
+          throw new Error('Réponse du serveur invalide (pas du JSON)');
+        }
+        await response.json();
+        window.location.href = '/connexion?callbackUrl=' + encodeURIComponent(window.location.href);
+        return;
+      }
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error('Réponse du serveur invalide (pas du JSON)');
+      }
       const data = await response.json();
       if (!response.ok) {
         throw new Error(data.error || "Erreur lors de la récupération de l'historique");

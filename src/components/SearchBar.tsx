@@ -21,6 +21,8 @@ export default function SearchBar() {
     <form className="flex flex-col md:flex-row gap-4 items-center" onSubmit={handleSubmit}>
       <input
         type="text"
+        name="depart"
+        id="depart"
         placeholder="Ville de départ"
         value={depart}
         onChange={e => setDepart(e.target.value)}
@@ -29,6 +31,8 @@ export default function SearchBar() {
       />
       <input
         type="text"
+        name="arrivee"
+        id="arrivee"
         placeholder="Ville d'arrivée"
         value={arrivee}
         onChange={e => setArrivee(e.target.value)}
@@ -37,6 +41,8 @@ export default function SearchBar() {
       />
       <input
         type="date"
+        name="date"
+        id="date"
         value={date}
         onChange={e => setDate(e.target.value)}
         className="input input-bordered px-4 py-2 rounded border text-gray-900 [&::-webkit-calendar-picker-indicator]:hover:cursor-pointer"

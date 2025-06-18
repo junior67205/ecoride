@@ -28,9 +28,9 @@ export default function VehiculeForm({
   return (
     <form
       onSubmit={handleVehiculeSubmit}
-      className="bg-white rounded-lg shadow-lg p-8 border border-green-100 max-w-2xl mx-auto space-y-8"
+      className="bg-green-50 rounded-xl shadow-sm border border-green-100 p-6 space-y-8"
     >
-      <h2 className="text-2xl font-bold mb-8 text-green-700 border-b border-green-100 pb-4 flex items-center">
+      <h2 className="text-xl font-semibold mb-6 text-green-700 flex items-center">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           className="h-6 w-6 mr-2"
@@ -150,6 +150,26 @@ export default function VehiculeForm({
             required
           />
         </div>
+        {/* Energie */}
+        <div>
+          <label className="font-medium mb-2 block text-gray-700" htmlFor="energie">
+            Énergie
+          </label>
+          <select
+            id="energie"
+            name="energie"
+            value={vehiculeForm.energie || ''}
+            onChange={handleVehiculeChange}
+            className="select select-bordered w-full bg-white focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors duration-200"
+            required
+          >
+            <option value="">Sélectionner une énergie</option>
+            <option value="Essence">Essence</option>
+            <option value="Diesel">Diesel</option>
+            <option value="Hybride">Hybride</option>
+            <option value="Electrique">Électrique</option>
+          </select>
+        </div>
       </div>
       {/* Préférences */}
       <div className="mt-6">
@@ -227,6 +247,10 @@ export default function VehiculeForm({
           {vehiculeMessage}
         </div>
       )}
+      {/* Exemple d'aide */}
+      <div className="text-xs text-green-600 mt-1">
+        Ajoutez ici les informations de votre véhicule.
+      </div>
     </form>
   );
 }

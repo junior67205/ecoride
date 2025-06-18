@@ -35,6 +35,9 @@ export default function VehiculeList({ vehicules, handleDeleteVehicule }: Vehicu
               <b>Date 1ère immatriculation :</b> {v.date_premiere_immatriculation}
             </div>
             <div className="text-sm text-gray-700 mb-1">
+              <b>Énergie :</b> {v.energie}
+            </div>
+            <div className="text-sm text-gray-700 mb-1">
               <b>Préférences :</b>{' '}
               {v.preferences
                 ? (() => {

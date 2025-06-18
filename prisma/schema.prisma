@@ -117,13 +117,19 @@ model voiture {
 }
 
 model participation {
-  participation_id Int           @id @default(autoincrement())
-  utilisateur_id   Int
-  covoiturage_id   Int
-  date_participation DateTime   @default(now())
+  participation_id   Int      @id @default(autoincrement())
+  utilisateur_id     Int
+  covoiturage_id     Int
+  date_participation DateTime @default(now())
 
-  utilisateur      utilisateur  @relation(fields: [utilisateur_id], references: [utilisateur_id])
-  covoiturage      covoiturage  @relation(fields: [covoiturage_id], references: [covoiturage_id])
+  // Champs pour validation et avis
+  validation   Boolean?
+  commentaire  String?
+  note         Int?
+  avis         String?
+
+  utilisateur  utilisateur  @relation(fields: [utilisateur_id], references: [utilisateur_id])
+  covoiturage  covoiturage  @relation(fields: [covoiturage_id], references: [covoiturage_id])
 
   @@unique([utilisateur_id, covoiturage_id])
 }

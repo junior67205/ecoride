@@ -32,6 +32,8 @@ export default function PasswordForm({
     >
       <input
         type="password"
+        name="oldPassword"
+        id="oldPassword"
         placeholder="Ancien mot de passe"
         value={oldPassword}
         onChange={e => setOldPassword(e.target.value)}
@@ -40,6 +42,8 @@ export default function PasswordForm({
       />
       <input
         type="password"
+        name="newPassword"
+        id="newPassword"
         placeholder="Nouveau mot de passe"
         value={newPassword}
         onChange={e => setNewPassword(e.target.value)}
@@ -48,6 +52,8 @@ export default function PasswordForm({
       />
       <input
         type="password"
+        name="confirmPassword"
+        id="confirmPassword"
         placeholder="Confirmer le nouveau mot de passe"
         value={confirmPassword}
         onChange={e => setConfirmPassword(e.target.value)}

@@ -69,7 +69,14 @@ export async function GET(req: NextRequest) {
         heure_depart: row.heure_depart,
         date_arrivee: row.date_arrivee,
         heure_arrivee: row.heure_arrivee,
-        ecologique: row.energie && ['electrique', 'hybride'].includes(row.energie.toLowerCase()),
+        ecologique:
+          row.energie &&
+          ['electrique', 'hybride'].includes(
+            row.energie
+              .toLowerCase()
+              .normalize('NFD')
+              .replace(/[\u0300-\u036f]/g, '')
+          ),
       }))
     : [];
 
@@ -107,7 +114,14 @@ export async function GET(req: NextRequest) {
         heure_depart: row.heure_depart,
         date_arrivee: row.date_arrivee,
         heure_arrivee: row.heure_arrivee,
-        ecologique: row.energie && ['electrique', 'hybride'].includes(row.energie.toLowerCase()),
+        ecologique:
+          row.energie &&
+          ['electrique', 'hybride'].includes(
+            row.energie
+              .toLowerCase()
+              .normalize('NFD')
+              .replace(/[\u0300-\u036f]/g, '')
+          ),
       }));
     }
   }

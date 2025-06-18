@@ -29,14 +29,29 @@ type CovoiturageDetail = {
 };
 
 export default function CovoiturageDetailPage({ params }: { params: { id: string } }) {
+  const [id, setId] = useState<string | null>(null);
   const [covoit, setCovoit] = useState<CovoiturageDetail | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Gestion params asynchrone ou non selon Next.js
+    (async () => {
+      // On cast en unknown avant Promise pour éviter l'erreur de typage
+      if (typeof (params as unknown as { then?: () => unknown }).then === 'function') {
+        const resolved = await (params as unknown as Promise<{ id: string }>);
+        setId(resolved.id);
+      } else {
+        setId(params.id);
+      }
+    })();
+  }, [params]);
+
+  useEffect(() => {
+    if (!id) return;
     const fetchCovoiturage = async () => {
       try {
         const baseUrl = process.env.NEXT_PUBLIC_BASE_URL!;
-        const res = await fetch(`${baseUrl}/api/covoiturages/${params.id}`, { cache: 'no-store' });
+        const res = await fetch(`${baseUrl}/api/covoiturages/${id}`, { cache: 'no-store' });
         if (!res.ok) throw new Error('Covoiturage non trouvé');
         const data = await res.json();
         setCovoit(data.covoiturage);
@@ -47,7 +62,7 @@ export default function CovoiturageDetailPage({ params }: { params: { id: string
       }
     };
     fetchCovoiturage();
-  }, [params.id]);
+  }, [id]);
 
   if (loading) return <div>Chargement...</div>;
   if (!covoit) return notFound();

@@ -35,6 +35,24 @@ export function useVehicules(typeUtilisateur: string) {
   const fetchVehicules = async () => {
     setVehiculesLoading(true);
     const res = await fetch('/api/mon-espace/vehicules');
+    if (res.status === 401) {
+      const contentType = res.headers.get('content-type');
+      if (
+        !contentType ||
+        (!contentType.includes('application/json') && !contentType.includes('text/plain'))
+      ) {
+        setVehiculesLoading(false);
+        throw new Error('Réponse du serveur invalide (pas du JSON)');
+      }
+      await res.json();
+      window.location.href = '/connexion?callbackUrl=' + encodeURIComponent(window.location.href);
+      return;
+    }
+    const contentType = res.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      setVehiculesLoading(false);
+      throw new Error('Réponse du serveur invalide (pas du JSON)');
+    }
     const data = await res.json();
     if (!data.error) setVehicules(data);
     setVehiculesLoading(false);
@@ -123,6 +141,22 @@ export function useVehicules(typeUtilisateur: string) {
           preferences: vehiculeForm.preferences,
         }),
       });
+      if (res.status === 401) {
+        const contentType = res.headers.get('content-type');
+        if (
+          !contentType ||
+          (!contentType.includes('application/json') && !contentType.includes('text/plain'))
+        ) {
+          throw new Error('Réponse du serveur invalide (pas du JSON)');
+        }
+        await res.json();
+        window.location.href = '/connexion?callbackUrl=' + encodeURIComponent(window.location.href);
+        return;
+      }
+      const contentType = res.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error('Réponse du serveur invalide (pas du JSON)');
+      }
       const data = await res.json();
       if (res.ok) {
         setVehiculeMessage('Véhicule ajouté avec succès.');
@@ -151,17 +185,37 @@ export function useVehicules(typeUtilisateur: string) {
     setVehiculeError('');
     setVehiculeMessage('');
     try {
-      const res = await fetch('/api/mon-espace/vehicules', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setVehiculeMessage(data.message || 'Véhicule supprimé.');
-        fetchVehicules();
-      } else {
-        setVehiculeError(data.error || 'Erreur lors de la suppression.');
+      let force = false;
+      let retry = true;
+      while (retry) {
+        const res = await fetch('/api/mon-espace/vehicules', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id, force }),
+        });
+        const data = await res.json();
+        if (res.ok) {
+          setVehiculeMessage(data.message || 'Véhicule supprimé.');
+          fetchVehicules();
+          retry = false;
+        } else if (
+          !force &&
+          data.error &&
+          data.error.includes("encore référencé dans l'historique des covoiturages")
+        ) {
+          if (
+            window.confirm(
+              'Ce véhicule est encore lié à des covoiturages (même annulés). Voulez-vous vraiment tout supprimer ? Cette action est irréversible.'
+            )
+          ) {
+            force = true;
+          } else {
+            retry = false;
+          }
+        } else {
+          setVehiculeError(data.error || 'Erreur lors de la suppression.');
+          retry = false;
+        }
       }
     } catch {
       setVehiculeError('Erreur réseau ou serveur.');

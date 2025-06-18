@@ -51,10 +51,44 @@ export function useFetchProfil(): UseFetchProfilReturn {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ type_utilisateur: selectedRole }),
       });
+      if (res.status === 401) {
+        const contentType = res.headers.get('content-type');
+        if (
+          !contentType ||
+          (!contentType.includes('application/json') && !contentType.includes('text/plain'))
+        ) {
+          throw new Error('Réponse du serveur invalide (pas du JSON)');
+        }
+        await res.json();
+        window.location.href = '/connexion?callbackUrl=' + encodeURIComponent(window.location.href);
+        return;
+      }
+      const contentType = res.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error('Réponse du serveur invalide (pas du JSON)');
+      }
       const data = await res.json();
       if (res.ok) {
         setRoleSuccess(data.message || 'Rôle enregistré avec succès.');
         const profilRes = await fetch('/api/mon-espace/profil');
+        if (profilRes.status === 401) {
+          const profilContentType = profilRes.headers.get('content-type');
+          if (
+            !profilContentType ||
+            (!profilContentType.includes('application/json') &&
+              !profilContentType.includes('text/plain'))
+          ) {
+            throw new Error('Réponse du serveur invalide (pas du JSON)');
+          }
+          await profilRes.json();
+          window.location.href =
+            '/connexion?callbackUrl=' + encodeURIComponent(window.location.href);
+          return;
+        }
+        const profilContentType = profilRes.headers.get('content-type');
+        if (!profilContentType || !profilContentType.includes('application/json')) {
+          throw new Error('Réponse du serveur invalide (pas du JSON)');
+        }
         const profilData = await profilRes.json();
         if (!profilData.error) {
           setProfil(profilData);
@@ -81,6 +115,22 @@ export function useFetchProfil(): UseFetchProfilReturn {
 
   const fetchProfil = async (setProfil: (profil: Profil) => void) => {
     const res = await fetch('/api/mon-espace/profil');
+    if (res.status === 401) {
+      const contentType = res.headers.get('content-type');
+      if (
+        !contentType ||
+        (!contentType.includes('application/json') && !contentType.includes('text/plain'))
+      ) {
+        throw new Error('Réponse du serveur invalide (pas du JSON)');
+      }
+      await res.json();
+      window.location.href = '/connexion?callbackUrl=' + encodeURIComponent(window.location.href);
+      return;
+    }
+    const contentType = res.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      throw new Error('Réponse du serveur invalide (pas du JSON)');
+    }
     const data = await res.json();
     if (!data.error) setProfil(data);
   };

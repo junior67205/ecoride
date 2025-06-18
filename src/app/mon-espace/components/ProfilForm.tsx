@@ -18,24 +18,8 @@ export default function ProfilForm({
   handleProfilChange,
 }: ProfilFormProps) {
   return (
-    <div className="bg-white rounded-lg shadow-lg p-8 border border-green-100 max-w-2xl mx-auto">
-      <h2 className="text-2xl font-bold mb-8 text-green-700 border-b border-green-100 pb-4 flex items-center">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="h-6 w-6 mr-2"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M5.121 17.804A13.937 13.937 0 0112 15c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0z"
-          />
-        </svg>
-        Mon profil
-      </h2>
+    <div className="bg-green-50 rounded-xl shadow-sm border border-green-100 p-6 space-y-8">
+      <h2 className="text-xl font-semibold mb-6 text-green-700">Informations personnelles</h2>
       <div className="space-y-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
@@ -100,7 +84,7 @@ export default function ProfilForm({
               placeholder="ex: Jean ou Jean-Pierre"
               required
             />
-            <div className="text-xs text-gray-500 mt-1">
+            <div className="text-xs text-green-600 mt-1">
               Format : lettres uniquement, tiret (-) optionnel pour les prénoms composés
             </div>
           </div>
@@ -118,6 +102,9 @@ export default function ProfilForm({
               style={{ wordBreak: 'break-all' }}
               required
             />
+            <div className="text-xs text-green-600 mt-1">
+              Votre adresse email ne sera pas affichée publiquement.
+            </div>
           </div>
           <div>
             <label className="font-medium mb-2 block text-gray-700" htmlFor="telephone">
@@ -135,7 +122,7 @@ export default function ProfilForm({
               placeholder="ex: 0612345678"
               required
             />
-            <div className="text-xs text-gray-500 mt-1">Format : 10 chiffres (ex: 0612345678)</div>
+            <div className="text-xs text-green-600 mt-1">Format : 10 chiffres (ex: 0612345678)</div>
           </div>
           <div className="md:col-span-2">
             <label className="font-medium mb-2 block text-gray-700" htmlFor="adresse">
@@ -152,7 +139,7 @@ export default function ProfilForm({
               placeholder="ex: 123 rue de la Paix"
               required
             />
-            <div className="text-xs text-gray-500 mt-1">
+            <div className="text-xs text-green-600 mt-1">
               Format : lettres, chiffres et tiret (-) uniquement
             </div>
           </div>

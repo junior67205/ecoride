@@ -70,7 +70,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
         heure_depart: row.heure_depart,
         date_arrivee: row.date_arrivee,
         heure_arrivee: row.heure_arrivee,
-        ecologique: row.energie && row.energie.toLowerCase() === 'electrique',
+        ecologique: row.energie && ['electrique', 'hybride'].includes(row.energie.toLowerCase()),
         lieu_depart: row.lieu_depart,
         lieu_arrivee: row.lieu_arrivee,
         statut: row.statut,

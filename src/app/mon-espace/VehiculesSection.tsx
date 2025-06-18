@@ -34,8 +34,8 @@ export default function VehiculesSection({
   handleRemovePreference,
 }: VehiculesSectionProps) {
   return (
-    <div className="max-w-2xl mx-auto w-full bg-white rounded shadow p-8 mb-8">
-      <h2 className="text-2xl font-bold text-center mb-6">Mes véhicules</h2>
+    <div className="max-w-2xl mx-auto w-full bg-white rounded-lg shadow-lg p-8 border border-green-100 mb-8">
+      <h2 className="text-2xl font-bold mb-6 text-green-700 text-center">Mes véhicules</h2>
       {vehiculesLoading ? (
         <div className="text-center text-gray-500">Chargement des véhicules...</div>
       ) : (

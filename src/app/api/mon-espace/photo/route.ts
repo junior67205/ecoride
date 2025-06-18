@@ -11,7 +11,10 @@ const prisma = new PrismaClient();
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
-    return new Response(JSON.stringify({ error: 'Non autorisé' }), { status: 401 });
+    return new Response(JSON.stringify({ error: 'Non autorisé' }), {
+      status: 401,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 
   try {
@@ -19,13 +22,17 @@ export async function POST(req: NextRequest) {
     const file = formData.get('photo') as File;
 
     if (!file) {
-      return new Response(JSON.stringify({ error: 'Aucun fichier fourni' }), { status: 400 });
+      return new Response(JSON.stringify({ error: 'Aucun fichier fourni' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
     }
 
     // Vérifier le type de fichier
     if (!file.type.startsWith('image/')) {
       return new Response(JSON.stringify({ error: 'Le fichier doit être une image' }), {
         status: 400,
+        headers: { 'Content-Type': 'application/json' },
       });
     }
 
@@ -33,6 +40,7 @@ export async function POST(req: NextRequest) {
     if (file.size > 5 * 1024 * 1024) {
       return new Response(JSON.stringify({ error: "L'image ne doit pas dépasser 5MB" }), {
         status: 400,
+        headers: { 'Content-Type': 'application/json' },
       });
     }
 
@@ -58,12 +66,18 @@ export async function POST(req: NextRequest) {
       data: updateData,
     });
 
-    return new Response(JSON.stringify({ photo: filename }), { status: 200 });
+    return new Response(JSON.stringify({ photo: filename }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
   } catch (error) {
     console.error('Erreur lors du téléchargement:', error);
     return new Response(
       JSON.stringify({ error: 'Une erreur est survenue lors du téléchargement' }),
-      { status: 500 }
+      {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      }
     );
   }
 }
@@ -71,7 +85,10 @@ export async function POST(req: NextRequest) {
 export async function DELETE() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
-    return new Response(JSON.stringify({ error: 'Non autorisé' }), { status: 401 });
+    return new Response(JSON.stringify({ error: 'Non autorisé' }), {
+      status: 401,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 
   try {
@@ -87,12 +104,16 @@ export async function DELETE() {
 
     return new Response(JSON.stringify({ message: 'Photo supprimée avec succès' }), {
       status: 200,
+      headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {
     console.error('Erreur lors de la suppression:', error);
     return new Response(
       JSON.stringify({ error: 'Une erreur est survenue lors de la suppression' }),
-      { status: 500 }
+      {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      }
     );
   }
 }

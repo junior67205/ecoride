@@ -19,6 +19,7 @@ export type VehiculeForm = {
   couleur: string;
   marque_id: string;
   nb_place: string;
+  energie: string;
   preferences: {
     fumeur: boolean;
     animal: boolean;
@@ -37,6 +38,7 @@ export type Vehicule = {
   nb_place: number;
   preferences: string;
   date_premiere_immatriculation: string;
+  energie: string;
 };
 
 export type Marque = {
@@ -76,6 +78,10 @@ export type Covoiturage = {
     email: string;
   } | null;
   participants: Participant[];
+  validation?: boolean | null;
+  commentaire?: string | null;
+  note?: number | null;
+  avis?: string | null;
 };
 
 export type VoyageForm = {

@@ -8,11 +8,17 @@ const prisma = new PrismaClient();
 export async function PATCH(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
-    return new Response(JSON.stringify({ error: 'Non autorisé' }), { status: 401 });
+    return new Response(JSON.stringify({ error: 'Non autorisé' }), {
+      status: 401,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
   const { type_utilisateur } = await req.json();
   if (!type_utilisateur || !['chauffeur', 'passager', 'les deux'].includes(type_utilisateur)) {
-    return new Response(JSON.stringify({ error: 'Type utilisateur invalide' }), { status: 400 });
+    return new Response(JSON.stringify({ error: 'Type utilisateur invalide' }), {
+      status: 400,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
   try {
     await prisma.utilisateur.update({
@@ -21,10 +27,12 @@ export async function PATCH(req: NextRequest) {
     });
     return new Response(JSON.stringify({ message: 'Rôle enregistré avec succès.' }), {
       status: 200,
+      headers: { 'Content-Type': 'application/json' },
     });
   } catch {
     return new Response(JSON.stringify({ error: 'Erreur lors de la mise à jour.' }), {
       status: 500,
+      headers: { 'Content-Type': 'application/json' },
     });
   }
 }

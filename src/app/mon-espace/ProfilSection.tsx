@@ -2,10 +2,8 @@ import React from 'react';
 import ProfilForm from './components/ProfilForm';
 import PasswordForm from './components/PasswordForm';
 import PhotoUpload from './components/PhotoUpload';
-import ProfilSectionHeader from './components/ProfilSectionHeader';
 import AlertMessage from './components/AlertMessage';
 import Loader from './components/Loader';
-import SectionCard from './components/SectionCard';
 import { Profil } from './typesMonEspace';
 
 type ProfilSectionProps = {
@@ -14,7 +12,6 @@ type ProfilSectionProps = {
   profilError: string;
   profilLoading: boolean;
   handleProfilChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
-  handleProfilSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
   photoPreview: string;
   photoFile: File | null;
   handlePhotoChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -22,7 +19,6 @@ type ProfilSectionProps = {
   handlePhotoDelete: () => void;
   photoError: string;
   showPasswordForm: boolean;
-  setShowPasswordForm: (show: boolean) => void;
   oldPassword: string;
   newPassword: string;
   confirmPassword: string;
@@ -44,7 +40,6 @@ export default function ProfilSection({
   profilError,
   profilLoading,
   handleProfilChange,
-  handleProfilSubmit,
   photoPreview,
   photoFile,
   handlePhotoChange,
@@ -52,7 +47,6 @@ export default function ProfilSection({
   handlePhotoDelete,
   photoError,
   showPasswordForm,
-  setShowPasswordForm,
   oldPassword,
   newPassword,
   confirmPassword,
@@ -74,37 +68,29 @@ export default function ProfilSection({
   }
 
   return (
-    <section className="max-w-xl mx-auto mb-10">
-      <ProfilSectionHeader
-        showPasswordForm={showPasswordForm}
-        setShowPasswordForm={setShowPasswordForm}
+    <div className="max-w-2xl mx-auto w-full bg-white rounded-lg shadow-lg p-8 border border-green-100 mb-8">
+      <h2 className="text-2xl font-bold mb-6 text-green-700 text-center">Mon profil</h2>
+      <ProfilForm
+        profil={profil}
+        profilLoading={profilLoading}
+        profilMessage={profilMessage}
+        profilError={profilError}
+        handleProfilChange={handleProfilChange}
       />
-      <SectionCard>
-        <form onSubmit={handleProfilSubmit} className="flex flex-col gap-3">
-          <PhotoUpload
-            photoPreview={photoPreview}
-            photoFile={photoFile}
-            avatar={avatar}
-            handlePhotoChange={handlePhotoChange}
-            handlePhotoUpload={handlePhotoUpload}
-            handlePhotoDelete={handlePhotoDelete}
-            photoError={photoError}
-            profilLoading={profilLoading}
-            onCancelPhoto={handleCancelPhoto}
-          />
-          <ProfilForm
-            profil={profil}
-            profilLoading={profilLoading}
-            profilMessage={profilMessage}
-            profilError={profilError}
-            handleProfilChange={handleProfilChange}
-            handleProfilSubmit={handleProfilSubmit}
-          />
-          {profilLoading && <Loader />}
-          <AlertMessage message={profilError} type="error" />
-          <AlertMessage message={profilMessage} type="success" />
-        </form>
-      </SectionCard>
+      <PhotoUpload
+        photoPreview={photoPreview}
+        photoFile={photoFile}
+        avatar={avatar}
+        handlePhotoChange={handlePhotoChange}
+        handlePhotoUpload={handlePhotoUpload}
+        handlePhotoDelete={handlePhotoDelete}
+        photoError={photoError}
+        profilLoading={profilLoading}
+        onCancelPhoto={handleCancelPhoto}
+      />
+      {profilLoading && <Loader />}
+      <AlertMessage message={profilError} type="error" />
+      <AlertMessage message={profilMessage} type="success" />
       {showPasswordForm && (
         <PasswordForm
           oldPassword={oldPassword}
@@ -119,6 +105,6 @@ export default function ProfilSection({
           passwordLoading={passwordLoading}
         />
       )}
-    </section>
+    </div>
   );
 }

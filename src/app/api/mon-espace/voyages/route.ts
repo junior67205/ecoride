@@ -8,7 +8,10 @@ const prisma = new PrismaClient();
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
-    return new Response(JSON.stringify({ error: 'Non autorisé' }), { status: 401 });
+    return new Response(JSON.stringify({ error: 'Non autorisé' }), {
+      status: 401,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 
   const {
@@ -36,6 +39,7 @@ export async function POST(req: NextRequest) {
   ) {
     return new Response(JSON.stringify({ error: 'Tous les champs sont obligatoires' }), {
       status: 400,
+      headers: { 'Content-Type': 'application/json' },
     });
   }
 
@@ -43,6 +47,7 @@ export async function POST(req: NextRequest) {
   if (Number(prix) <= 2) {
     return new Response(JSON.stringify({ error: 'Le prix doit être supérieur à 2 crédits' }), {
       status: 400,
+      headers: { 'Content-Type': 'application/json' },
     });
   }
 
@@ -52,7 +57,10 @@ export async function POST(req: NextRequest) {
   });
 
   if (!voiture) {
-    return new Response(JSON.stringify({ error: 'Véhicule non trouvé' }), { status: 404 });
+    return new Response(JSON.stringify({ error: 'Véhicule non trouvé' }), {
+      status: 404,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 
   // Calculer le nombre de places disponibles par défaut (capacité du véhicule moins le conducteur)
@@ -65,6 +73,7 @@ export async function POST(req: NextRequest) {
         JSON.stringify({ error: 'Le nombre de places doit être supérieur à 0' }),
         {
           status: 400,
+          headers: { 'Content-Type': 'application/json' },
         }
       );
     }
@@ -74,7 +83,7 @@ export async function POST(req: NextRequest) {
         JSON.stringify({
           error: `Le nombre de places ne peut pas dépasser ${voiture.nb_place} (capacité totale du véhicule)`,
         }),
-        { status: 400 }
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
       );
     }
   }
@@ -85,22 +94,38 @@ export async function POST(req: NextRequest) {
       data: {
         lieu_depart: depart,
         lieu_arrivee: arrivee,
+        date_depart: new Date(dateDepart),
+        heure_depart: heureDepart,
+        date_arrivee: new Date(dateArrivee),
+        heure_arrivee: heureArrivee,
         prix_personne: Number(prix),
-        nb_place: nb_place ? Number(nb_place) : nbPlacesParDefaut,
-        voiture: { connect: { voiture_id: voiture.voiture_id } },
-        utilisateur: { connect: { utilisateur_id: Number(session.user.id) } },
+        nb_place: Number(nb_place) || nbPlacesParDefaut,
         statut: 'ouvert',
-        date_depart: dateDepart ? new Date(dateDepart) : undefined,
-        heure_depart: heureDepart || undefined,
-        date_arrivee: dateArrivee ? new Date(dateArrivee) : undefined,
-        heure_arrivee: heureArrivee || undefined,
+        voiture: {
+          connect: {
+            voiture_id: Number(vehiculeId),
+          },
+        },
+        utilisateur: {
+          connect: {
+            utilisateur_id: Number(session.user.id),
+          },
+        },
       },
     });
-    return new Response(JSON.stringify({ message: 'Voyage créé', covoiturage }), { status: 201 });
-  } catch (error) {
-    console.error('Erreur création voyage:', error);
-    return new Response(JSON.stringify({ error: 'Erreur lors de la création du voyage.' }), {
-      status: 500,
+
+    return new Response(JSON.stringify(covoiturage), {
+      status: 201,
+      headers: { 'Content-Type': 'application/json' },
     });
+  } catch (error) {
+    console.error('Erreur lors de la création du covoiturage:', error);
+    return new Response(
+      JSON.stringify({ error: 'Une erreur est survenue lors de la création du covoiturage' }),
+      {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
   }
 }
