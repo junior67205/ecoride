@@ -10,7 +10,7 @@
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "test:watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch",
     "format": "prettier --write .",
-    "prepare": "husky install"
+    "prepare": "husky"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
@@ -27,7 +27,6 @@
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "helmet": "^8.1.0",
-    "husky": "^9.1.7",
     "jest": "^29.7.0",
     "lint-staged": "^16.0.0",
     "lucide-react": "^0.511.0",
@@ -54,6 +53,7 @@
     "dotenv": "^16.5.0",
     "eslint": "^9",
     "eslint-config-next": "15.1.8",
+    "husky": "^9.1.7",
     "jest-environment-jsdom": "^29.7.0",
     "postcss": "^8",
     "prisma": "^6.8.2",
