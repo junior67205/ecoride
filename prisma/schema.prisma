@@ -127,6 +127,9 @@ model participation {
   commentaire  String?
   note         Int?
   avis         String?
+  
+  // Numéro de dossier pour les problèmes signalés
+  numero_dossier String? @db.VarChar(20)
 
   utilisateur  utilisateur  @relation(fields: [utilisateur_id], references: [utilisateur_id])
   covoiturage  covoiturage  @relation(fields: [covoiturage_id], references: [covoiturage_id])

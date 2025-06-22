@@ -1,50 +1,53 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const { data: session } = useSession();
 
-  // Rafraîchir les crédits au chargement de la page
-  useEffect(() => {
-    // refreshProfil();
-  }, []);
+  const isEmploye = session?.user?.type === 'employe' || session?.user?.type === 'admin';
 
   return (
-    <nav className="bg-white border-b border-primary-light shadow-sm sticky top-0 z-50">
-      <div className="max-w-6xl mx-auto px-4 flex items-center justify-between h-16">
+    <nav className="bg-white/95 border-b border-primary-light shadow-sm sticky top-0 z-50 backdrop-blur">
+      <div className="max-w-6xl mx-auto px-6 flex items-center justify-between h-20">
         {/* Logo / Nom du site */}
         <Link href="/" className="text-2xl font-extrabold text-primary flex items-center gap-2">
           EcoRide
         </Link>
         {/* Menu desktop */}
-        <div className="hidden md:flex gap-6 items-center">
-          <Link href="/" className="text-text hover:text-primary font-medium transition">
+        <div className="hidden md:flex gap-8 items-center">
+          <Link
+            href="/"
+            className="text-text hover:text-primary font-medium text-base transition-all duration-150"
+          >
             Accueil
           </Link>
           <Link
             href="/covoiturages"
-            className="text-text hover:text-primary font-medium transition"
+            className="text-text hover:text-primary font-medium text-base transition-all duration-150"
           >
             Covoiturages
           </Link>
-          <Link href="/contact" className="text-text hover:text-primary font-medium transition">
+          <Link
+            href="/contact"
+            className="text-text hover:text-primary font-medium text-base transition-all duration-150"
+          >
             Contact
           </Link>
           {session ? (
             <>
               <Link
-                href="/mon-espace"
-                className="text-text hover:text-primary font-medium transition"
+                href={isEmploye ? '/espace-employe' : '/mon-espace'}
+                className="text-text hover:text-primary font-medium text-base transition-all duration-150"
               >
                 Mon espace
               </Link>
               <button
                 onClick={() => signOut({ callbackUrl: '/' })}
-                className="text-text hover:text-primary font-medium transition bg-transparent border-none cursor-pointer"
+                className="text-text hover:text-primary font-medium text-base transition-all duration-150 bg-transparent border-none cursor-pointer"
               >
                 Déconnexion
               </button>
@@ -53,13 +56,13 @@ export default function Navbar() {
             <>
               <Link
                 href="/connexion"
-                className="text-text hover:text-primary font-medium transition"
+                className="text-text hover:text-primary font-medium text-base transition-all duration-150"
               >
                 Connexion
               </Link>
               <Link
                 href="/inscription"
-                className="text-text hover:text-primary font-medium transition"
+                className="text-text hover:text-primary font-medium text-base transition-all duration-150"
               >
                 Inscription
               </Link>
@@ -89,24 +92,24 @@ export default function Navbar() {
       </div>
       {/* Menu mobile déroulant */}
       {menuOpen && (
-        <div className="md:hidden bg-white border-t border-primary-light shadow px-4 pb-4 flex flex-col gap-3 animate-fade-in">
+        <div className="md:hidden bg-white/95 border-t border-primary-light shadow px-4 pb-4 flex flex-col gap-3 animate-fade-in">
           <Link
             href="/"
-            className="text-text hover:text-primary font-medium transition"
+            className="text-text hover:text-primary font-medium text-base transition-all duration-150"
             onClick={() => setMenuOpen(false)}
           >
             Accueil
           </Link>
           <Link
             href="/covoiturages"
-            className="text-text hover:text-primary font-medium transition"
+            className="text-text hover:text-primary font-medium text-base transition-all duration-150"
             onClick={() => setMenuOpen(false)}
           >
             Covoiturages
           </Link>
           <Link
             href="/contact"
-            className="text-text hover:text-primary font-medium transition"
+            className="text-text hover:text-primary font-medium text-base transition-all duration-150"
             onClick={() => setMenuOpen(false)}
           >
             Contact
@@ -114,8 +117,8 @@ export default function Navbar() {
           {session ? (
             <>
               <Link
-                href="/mon-espace"
-                className="text-text hover:text-primary font-medium transition"
+                href={isEmploye ? '/espace-employe' : '/mon-espace'}
+                className="text-text hover:text-primary font-medium text-base transition-all duration-150"
                 onClick={() => setMenuOpen(false)}
               >
                 Mon espace
@@ -125,7 +128,7 @@ export default function Navbar() {
                   setMenuOpen(false);
                   signOut({ callbackUrl: '/' });
                 }}
-                className="text-text hover:text-primary font-medium transition bg-transparent border-none cursor-pointer text-left w-full py-2"
+                className="text-text hover:text-primary font-medium text-base transition-all duration-150 bg-transparent border-none cursor-pointer text-left w-full py-2"
               >
                 Déconnexion
               </button>
@@ -134,14 +137,14 @@ export default function Navbar() {
             <>
               <Link
                 href="/connexion"
-                className="text-text hover:text-primary font-medium transition"
+                className="text-text hover:text-primary font-medium text-base transition-all duration-150"
                 onClick={() => setMenuOpen(false)}
               >
                 Connexion
               </Link>
               <Link
                 href="/inscription"
-                className="text-text hover:text-primary font-medium transition"
+                className="text-text hover:text-primary font-medium text-base transition-all duration-150"
                 onClick={() => setMenuOpen(false)}
               >
                 Inscription

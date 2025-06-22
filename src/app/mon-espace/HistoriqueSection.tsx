@@ -59,11 +59,22 @@ export default function HistoriqueSection() {
     note: number | null = null,
     avis = ''
   ) => {
-    await fetch(`/api/mon-espace/covoiturage/${id}/validation`, {
+    const response = await fetch(`/api/mon-espace/covoiturage/${id}/validation`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ validation, commentaire, note, avis }),
     });
+
+    const data = await response.json();
+
+    if (data.success) {
+      if (!validation && data.numeroDossier) {
+        toast.success(`Problème signalé avec succès. Numéro de dossier : ${data.numeroDossier}`);
+      } else if (validation) {
+        toast.success('Covoiturage validé avec succès');
+      }
+    }
+
     refreshHistorique();
     setShowProblemeId(null);
     setCommentaire('');

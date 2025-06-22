@@ -31,9 +31,10 @@ export const authOptions: NextAuthOptions = {
         }
         return {
           id: user.utilisateur_id.toString(),
-          email: user.email,
+          email: user.email || '',
           name: `${user.prenom} ${user.nom}`,
           role: user.role_id,
+          type: user.type_utilisateur,
         };
       },
     }),
@@ -50,6 +51,8 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id;
         // @ts-expect-error: propriété custom ajoutée par nos soins
         token.role = user.role;
+        // @ts-expect-error: propriété custom ajoutée par nos soins
+        token.type = user.type;
       }
       return token;
     },
@@ -58,6 +61,8 @@ export const authOptions: NextAuthOptions = {
         session.user.id = token.id as string;
         // @ts-expect-error: propriété custom ajoutée par nos soins
         session.user.role = token.role as number;
+        // @ts-expect-error: propriété custom ajoutée par nos soins
+        session.user.type = token.type as string;
       }
       return session;
     },
