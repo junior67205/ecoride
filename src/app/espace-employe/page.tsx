@@ -5,10 +5,11 @@ import { signOut } from 'next-auth/react';
 import SidebarEspaceEmploye from './components/SidebarEspaceEmploye';
 import AvisSection from './components/AvisSection';
 import ProblemesSection from './components/ProblemesSection';
+import ProfilSection from '../components/ProfilSection';
 
 export default function EspaceEmploye() {
   const { data: session, status } = useSession();
-  const [section, setSection] = useState<'avis' | 'problemes'>('avis');
+  const [section, setSection] = useState<'profil' | 'avis' | 'problemes'>('profil');
 
   if (status === 'loading') {
     return (
@@ -57,6 +58,7 @@ export default function EspaceEmploye() {
       <main className="flex-1 p-8">
         <h1 className="text-3xl font-bold text-primary mb-8">Espace Employé</h1>
 
+        {section === 'profil' && <ProfilSection />}
         {section === 'avis' && <AvisSection />}
         {section === 'problemes' && <ProblemesSection />}
       </main>

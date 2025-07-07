@@ -8,7 +8,30 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const { data: session } = useSession();
 
-  const isEmploye = session?.user?.type === 'employe' || session?.user?.type === 'admin';
+  // Fonction pour déterminer quel lien afficher selon le rôle
+  const getEspaceLink = () => {
+    if (!session?.user?.type) return null;
+
+    switch (session.user.type) {
+      case 'admin':
+        return {
+          href: '/espace-admin',
+          label: 'Espace Admin',
+        };
+      case 'employe':
+        return {
+          href: '/espace-employe',
+          label: 'Espace Employé',
+        };
+      default:
+        return {
+          href: '/mon-espace',
+          label: 'Mon espace',
+        };
+    }
+  };
+
+  const espaceLink = getEspaceLink();
 
   return (
     <nav className="bg-white/95 border-b border-primary-light shadow-sm sticky top-0 z-50 backdrop-blur">
@@ -39,12 +62,14 @@ export default function Navbar() {
           </Link>
           {session ? (
             <>
-              <Link
-                href={isEmploye ? '/espace-employe' : '/mon-espace'}
-                className="text-text hover:text-primary font-medium text-base transition-all duration-150"
-              >
-                Mon espace
-              </Link>
+              {espaceLink && (
+                <Link
+                  href={espaceLink.href}
+                  className="text-text hover:text-primary font-medium text-base transition-all duration-150"
+                >
+                  {espaceLink.label}
+                </Link>
+              )}
               <button
                 onClick={() => signOut({ callbackUrl: '/' })}
                 className="text-text hover:text-primary font-medium text-base transition-all duration-150 bg-transparent border-none cursor-pointer"
@@ -116,13 +141,15 @@ export default function Navbar() {
           </Link>
           {session ? (
             <>
-              <Link
-                href={isEmploye ? '/espace-employe' : '/mon-espace'}
-                className="text-text hover:text-primary font-medium text-base transition-all duration-150"
-                onClick={() => setMenuOpen(false)}
-              >
-                Mon espace
-              </Link>
+              {espaceLink && (
+                <Link
+                  href={espaceLink.href}
+                  className="text-text hover:text-primary font-medium text-base transition-all duration-150"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  {espaceLink.label}
+                </Link>
+              )}
               <button
                 onClick={() => {
                   setMenuOpen(false);

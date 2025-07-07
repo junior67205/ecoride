@@ -17,24 +17,30 @@ export const authOptions: NextAuthOptions = {
         if (!credentials?.email || !credentials?.password) {
           return null;
         }
-        // Recherche de l'utilisateur dans la table "utilisateur" avec Prisma
+
         const user = await prisma.utilisateur.findUnique({
           where: { email: credentials.email },
         });
+
         if (!user || !user.password) {
           return null;
         }
-        // Vérification du mot de passe
+
+        if (user.suspendu) {
+          return null;
+        }
+
         const isValid = await bcrypt.compare(credentials.password, user.password);
+
         if (!isValid) {
           return null;
         }
+
         return {
           id: user.utilisateur_id.toString(),
           email: user.email || '',
-          name: `${user.prenom} ${user.nom}`,
-          role: user.role_id,
-          type: user.type_utilisateur,
+          name: `${user.prenom || ''} ${user.nom || ''}`.trim(),
+          type: user.type_utilisateur || undefined,
         };
       },
     }),
@@ -46,23 +52,17 @@ export const authOptions: NextAuthOptions = {
     signIn: '/connexion',
   },
   callbacks: {
-    async jwt({ token, user }) {
+    jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        // @ts-expect-error: propriété custom ajoutée par nos soins
-        token.role = user.role;
-        // @ts-expect-error: propriété custom ajoutée par nos soins
         token.type = user.type;
       }
       return token;
     },
-    async session({ session, token }) {
+    session({ session, token }) {
       if (session.user) {
-        session.user.id = token.id as string;
-        // @ts-expect-error: propriété custom ajoutée par nos soins
-        session.user.role = token.role as number;
-        // @ts-expect-error: propriété custom ajoutée par nos soins
-        session.user.type = token.type as string;
+        session.user.id = token.id;
+        session.user.type = token.type;
       }
       return session;
     },

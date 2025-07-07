@@ -1,4 +1,9 @@
-import { UserIcon, DocumentTextIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import {
+  UserIcon,
+  DocumentTextIcon,
+  ExclamationTriangleIcon,
+  Cog6ToothIcon,
+} from '@heroicons/react/24/outline';
 
 interface User {
   pseudo?: string;
@@ -7,8 +12,8 @@ interface User {
 }
 
 interface SidebarEspaceEmployeProps {
-  section: 'avis' | 'problemes';
-  setSection: (section: 'avis' | 'problemes') => void;
+  section: 'profil' | 'avis' | 'problemes';
+  setSection: (section: 'profil' | 'avis' | 'problemes') => void;
   signOut: () => void;
   user: User;
 }
@@ -31,6 +36,16 @@ export default function SidebarEspaceEmploye({
       </div>
 
       <nav className="flex flex-col gap-2 mt-4">
+        <button
+          className={`flex items-center gap-2 px-3 py-2 rounded transition text-left ${
+            section === 'profil' ? 'bg-green-100 text-green-700 font-semibold' : 'hover:bg-gray-100'
+          }`}
+          onClick={() => setSection('profil')}
+        >
+          <Cog6ToothIcon className="h-5 w-5" />
+          Mon Profil
+        </button>
+
         <button
           className={`flex items-center gap-2 px-3 py-2 rounded transition text-left ${
             section === 'avis' ? 'bg-green-100 text-green-700 font-semibold' : 'hover:bg-gray-100'

@@ -1,13 +1,35 @@
+import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
+// Fonction pour convertir les BigInt en nombres
+function convertBigInts(obj: unknown): unknown {
+  if (obj === null || obj === undefined) {
+    return obj;
+  }
+  if (typeof obj === 'bigint') {
+    return Number(obj);
+  }
+  if (Array.isArray(obj)) {
+    return obj.map(convertBigInts);
+  }
+  if (typeof obj === 'object') {
+    const converted: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(obj as Record<string, unknown>)) {
+      converted[key] = convertBigInts(value);
+    }
+    return converted;
+  }
+  return obj;
+}
+
 export async function GET() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
-    return new Response(JSON.stringify({ error: 'Non autorisé' }), { status: 401 });
+    return NextResponse.json({ message: 'Non autorisé' }, { status: 401 });
   }
 
   // Vérifier que l'utilisateur est un employé
@@ -17,73 +39,53 @@ export async function GET() {
   });
 
   if (!user || (user.type_utilisateur !== 'employe' && user.type_utilisateur !== 'admin')) {
-    return new Response(JSON.stringify({ error: 'Accès non autorisé' }), { status: 403 });
+    return NextResponse.json({ message: 'Accès non autorisé' }, { status: 403 });
   }
 
   try {
-    // Récupérer toutes les participations avec avis (commentaire, note, avis non null)
-    const participations = await prisma.$queryRaw`
-      SELECT 
-        p.participation_id,
-        p.covoiturage_id,
-        p.numero_dossier,
-        p.commentaire,
-        p.note,
-        p.avis,
-        p.validation,
-        p.date_participation,
-        u.pseudo as participant_pseudo,
-        u.email as participant_email,
-        c.lieu_depart,
-        c.lieu_arrivee,
-        c.date_depart,
-        c.heure_depart,
-        cu.pseudo as chauffeur_pseudo,
-        cu.email as chauffeur_email
-      FROM participation p
-      JOIN utilisateur u ON p.utilisateur_id = u.utilisateur_id
-      JOIN covoiturage c ON p.covoiturage_id = c.covoiturage_id
-      JOIN utilisateur cu ON c.utilisateur_id = cu.utilisateur_id
-      WHERE p.commentaire IS NOT NULL OR p.note IS NOT NULL OR p.avis IS NOT NULL
-      ORDER BY p.date_participation DESC
-    `;
+    const participations = await prisma.participation.findMany({
+      where: {
+        OR: [{ commentaire: { not: null } }, { note: { not: null } }, { avis: { not: null } }],
+      },
+      include: {
+        utilisateur: {
+          select: {
+            pseudo: true,
+            email: true,
+          },
+        },
+        covoiturage: {
+          include: {
+            utilisateur: {
+              select: {
+                pseudo: true,
+                email: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        date_participation: 'desc',
+      },
+    });
 
-    // Transformer les données pour l'affichage
-    const avis = (
-      participations as Array<{
-        participation_id: number;
-        covoiturage_id: number;
-        numero_dossier: string | null;
-        commentaire: string | null;
-        note: number | null;
-        avis: string | null;
-        validation: boolean | null;
-        date_participation: Date;
-        participant_pseudo: string | null;
-        participant_email: string | null;
-        lieu_depart: string | null;
-        lieu_arrivee: string | null;
-        date_depart: Date | null;
-        heure_depart: string | null;
-        chauffeur_pseudo: string | null;
-        chauffeur_email: string | null;
-      }>
-    ).map(participation => ({
+    const avis = participations.map(participation => ({
       id: participation.participation_id,
       covoiturage_id: participation.covoiturage_id,
       numero_dossier: participation.numero_dossier,
       participant: {
-        pseudo: participation.participant_pseudo || 'Anonyme',
-        email: participation.participant_email || '',
+        pseudo: participation.utilisateur?.pseudo || 'Anonyme',
+        email: participation.utilisateur?.email || '',
       },
       chauffeur: {
-        pseudo: participation.chauffeur_pseudo || 'Anonyme',
-        email: participation.chauffeur_email || '',
+        pseudo: participation.covoiturage.utilisateur?.pseudo || 'Anonyme',
+        email: participation.covoiturage.utilisateur?.email || '',
       },
       commentaire: participation.commentaire || '',
       note: participation.note || 0,
       avis: participation.avis || '',
-      date_creation: participation.date_participation,
+      date_creation: participation.date_participation.toISOString(),
       statut:
         participation.validation === true
           ? 'approuve'
@@ -91,22 +93,19 @@ export async function GET() {
             ? 'refuse'
             : 'en_attente',
       trajet: {
-        lieu_depart: participation.lieu_depart || '',
-        lieu_arrivee: participation.lieu_arrivee || '',
-        date_depart: participation.date_depart || '',
-        heure_depart: participation.heure_depart || '',
+        lieu_depart: participation.covoiturage.lieu_depart || '',
+        lieu_arrivee: participation.covoiturage.lieu_arrivee || '',
+        date_depart: participation.covoiturage.date_depart?.toISOString() || '',
+        heure_depart: participation.covoiturage.heure_depart || '',
       },
     }));
 
-    return new Response(JSON.stringify({ avis }), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return NextResponse.json({ avis: convertBigInts(avis) });
   } catch (error) {
     console.error('Erreur lors de la récupération des avis:', error);
-    return new Response(JSON.stringify({ error: 'Erreur lors de la récupération des avis' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return NextResponse.json(
+      { message: 'Erreur lors de la récupération des avis' },
+      { status: 500 }
+    );
   }
 }

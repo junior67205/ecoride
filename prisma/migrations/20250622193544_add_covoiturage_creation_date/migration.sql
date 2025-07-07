@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `covoiturage` ADD COLUMN `date_creation` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3);

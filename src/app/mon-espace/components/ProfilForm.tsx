@@ -158,8 +158,12 @@ export default function ProfilForm({
             />
           </div>
         </div>
-        <PrimaryButton type="submit" loading={profilLoading} className="w-full mt-4">
-          Enregistrer les modifications
+        <PrimaryButton
+          type="submit"
+          loading={profilLoading}
+          className="w-full mt-4 bg-primary hover:bg-primary-light text-white"
+        >
+          {profilLoading ? 'Enregistrement...' : 'Enregistrer les modifications'}
         </PrimaryButton>
         {profilError && (
           <div className="mb-4 p-3 bg-red-100 text-red-700 rounded font-semibold text-center">

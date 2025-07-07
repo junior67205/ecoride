@@ -1,8 +1,20 @@
+'use client';
+
 import Image from 'next/image';
 import SearchBar from '@/components/SearchBar';
 import Footer from '../components/Footer';
+import GalerieGrid from './components/GalerieGrid';
+import { useEffect, useState } from 'react';
 
 export default function HomePage() {
+  const [showGalerie, setShowGalerie] = useState(false);
+
+  useEffect(() => {
+    fetch('/api/config/galerie')
+      .then(res => res.json())
+      .then(data => setShowGalerie(data.afficher));
+  }, []);
+
   return (
     <main className="flex flex-col min-h-screen bg-background">
       {/* Hero section avec image de fond */}
@@ -84,44 +96,51 @@ export default function HomePage() {
       </section>
 
       {/* Nos engagements - style cartes modernes */}
-      <section className="py-16 px-4 max-w-6xl mx-auto w-full">
-        <h2 className="text-3xl font-extrabold text-primary text-center mb-10">Nos engagements</h2>
-        <div className="grid md:grid-cols-3 gap-8">
-          {/* Carte 1 */}
-          <div className="bg-white rounded-xl shadow-lg p-8 flex flex-col items-start border border-primary-light">
-            <h3 className="text-xl font-bold text-primary mb-4 leading-tight">
-              Réduire l&apos;impact environnemental
-            </h3>
-            <p className="text-text text-base">
-              EcoRide s&apos;engage à diminuer la pollution liée aux déplacements en encourageant le
-              covoiturage exclusivement en voiture. Chaque trajet partagé contribue à préserver
-              notre planète.
-            </p>
-          </div>
-          {/* Carte 2 */}
-          <div className="bg-white rounded-xl shadow-lg p-8 flex flex-col items-start border border-primary-light">
-            <h3 className="text-xl font-bold text-primary mb-4 leading-tight">
-              Approche écologique
-            </h3>
-            <p className="text-text text-base">
-              Nous prônons une mobilité plus verte et responsable, pour un avenir durable et
-              respectueux de l&apos;environnement. EcoRide place l&apos;écologie au cœur de sa
-              mission.
-            </p>
-          </div>
-          {/* Carte 3 */}
-          <div className="bg-white rounded-xl shadow-lg p-8 flex flex-col items-start border border-primary-light">
-            <h3 className="text-xl font-bold text-primary mb-4 leading-tight">
-              Covoiturage accessible
-            </h3>
-            <p className="text-text text-base">
-              Notre ambition est de devenir la plateforme de référence pour tous les voyageurs
-              soucieux de l&apos;environnement et de leur budget, en rendant le covoiturage simple,
-              économique et sécurisé.
-            </p>
+      <section className="w-full bg-[#f9fefa] py-16 px-4">
+        <div className="max-w-6xl mx-auto w-full">
+          <h2 className="text-3xl font-extrabold text-primary text-center mb-10">
+            Nos engagements
+          </h2>
+          <div className="grid md:grid-cols-3 gap-8">
+            {/* Carte 1 */}
+            <div className="bg-white rounded-xl shadow-xl p-8 flex flex-col items-start border border-primary-light hover:shadow-2xl transition-shadow duration-300">
+              <h3 className="text-xl font-bold text-primary mb-4 leading-tight">
+                Réduire l&apos;impact environnemental
+              </h3>
+              <p className="text-text text-base">
+                EcoRide s&apos;engage à diminuer la pollution liée aux déplacements en encourageant
+                le covoiturage exclusivement en voiture. Chaque trajet partagé contribue à préserver
+                notre planète.
+              </p>
+            </div>
+            {/* Carte 2 */}
+            <div className="bg-white rounded-xl shadow-xl p-8 flex flex-col items-start border border-primary-light hover:shadow-2xl transition-shadow duration-300">
+              <h3 className="text-xl font-bold text-primary mb-4 leading-tight">
+                Approche écologique
+              </h3>
+              <p className="text-text text-base">
+                Nous prônons une mobilité plus verte et responsable, pour un avenir durable et
+                respectueux de l&apos;environnement. EcoRide place l&apos;écologie au cœur de sa
+                mission.
+              </p>
+            </div>
+            {/* Carte 3 */}
+            <div className="bg-white rounded-xl shadow-xl p-8 flex flex-col items-start border border-primary-light hover:shadow-2xl transition-shadow duration-300">
+              <h3 className="text-xl font-bold text-primary mb-4 leading-tight">
+                Covoiturage accessible
+              </h3>
+              <p className="text-text text-base">
+                Notre ambition est de devenir la plateforme de référence pour tous les voyageurs
+                soucieux de l&apos;environnement et de leur budget, en rendant le covoiturage
+                simple, économique et sécurisé.
+              </p>
+            </div>
           </div>
         </div>
       </section>
+
+      {/* Galerie d'images pilotée par l'admin */}
+      {showGalerie && <GalerieGrid />}
 
       <Footer />
     </main>

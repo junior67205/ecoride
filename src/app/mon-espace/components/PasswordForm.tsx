@@ -65,7 +65,7 @@ export default function PasswordForm({
       </div>
       <button
         type="submit"
-        className="btn btn-primary bg-green-600 text-white rounded py-2 mt-2"
+        className="btn bg-primary hover:bg-primary-light text-white rounded py-2 mt-2"
         disabled={passwordLoading}
       >
         {passwordLoading ? 'Changement...' : 'Valider le changement'}

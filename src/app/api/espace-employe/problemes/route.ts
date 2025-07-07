@@ -1,13 +1,35 @@
+import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
+// Fonction pour convertir les BigInt en nombres
+function convertBigInts(obj: unknown): unknown {
+  if (obj === null || obj === undefined) {
+    return obj;
+  }
+  if (typeof obj === 'bigint') {
+    return Number(obj);
+  }
+  if (Array.isArray(obj)) {
+    return obj.map(convertBigInts);
+  }
+  if (typeof obj === 'object') {
+    const converted: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(obj as Record<string, unknown>)) {
+      converted[key] = convertBigInts(value);
+    }
+    return converted;
+  }
+  return obj;
+}
+
 export async function GET() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
-    return new Response(JSON.stringify({ error: 'Non autorisé' }), { status: 401 });
+    return NextResponse.json({ message: 'Non autorisé' }, { status: 401 });
   }
 
   // Vérifier que l'utilisateur est un employé
@@ -17,7 +39,7 @@ export async function GET() {
   });
 
   if (!user || (user.type_utilisateur !== 'employe' && user.type_utilisateur !== 'admin')) {
-    return new Response(JSON.stringify({ error: 'Accès non autorisé' }), { status: 403 });
+    return NextResponse.json({ message: 'Accès non autorisé' }, { status: 403 });
   }
 
   try {
@@ -26,32 +48,17 @@ export async function GET() {
       where: {
         validation: false, // Problèmes signalés
       },
-      select: {
-        participation_id: true,
-        covoiturage_id: true,
-        numero_dossier: true,
-        commentaire: true,
-        note: true,
-        avis: true,
-        date_participation: true,
+      include: {
         utilisateur: {
           select: {
-            utilisateur_id: true,
             pseudo: true,
             email: true,
           },
         },
         covoiturage: {
-          select: {
-            lieu_depart: true,
-            lieu_arrivee: true,
-            date_depart: true,
-            heure_depart: true,
-            date_arrivee: true,
-            heure_arrivee: true,
+          include: {
             utilisateur: {
               select: {
-                utilisateur_id: true,
                 pseudo: true,
                 email: true,
               },
@@ -67,8 +74,8 @@ export async function GET() {
       covoiturage_id: participation.covoiturage_id,
       numero_dossier: participation.numero_dossier,
       participant: {
-        pseudo: participation.utilisateur.pseudo || 'Anonyme',
-        email: participation.utilisateur.email || '',
+        pseudo: participation.utilisateur?.pseudo || 'Anonyme',
+        email: participation.utilisateur?.email || '',
       },
       chauffeur: {
         pseudo: participation.covoiturage.utilisateur?.pseudo || 'Anonyme',
@@ -77,28 +84,25 @@ export async function GET() {
       trajet: {
         lieu_depart: participation.covoiturage.lieu_depart || '',
         lieu_arrivee: participation.covoiturage.lieu_arrivee || '',
-        date_depart: participation.covoiturage.date_depart || '',
+        date_depart: participation.covoiturage.date_depart?.toISOString() || '',
         heure_depart: participation.covoiturage.heure_depart || '',
-        date_arrivee: participation.covoiturage.date_arrivee || '',
+        date_arrivee: participation.covoiturage.date_arrivee?.toISOString() || '',
         heure_arrivee: participation.covoiturage.heure_arrivee || '',
       },
       probleme: {
         commentaire: participation.commentaire || '',
         note: participation.note || 0,
         avis: participation.avis || '',
-        date_signalement: participation.date_participation,
+        date_signalement: participation.date_participation.toISOString(),
       },
     }));
 
-    return new Response(JSON.stringify({ problemes }), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return NextResponse.json({ problemes: convertBigInts(problemes) });
   } catch (error) {
     console.error('Erreur lors de la récupération des problèmes:', error);
-    return new Response(JSON.stringify({ error: 'Erreur lors de la récupération des problèmes' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return NextResponse.json(
+      { message: 'Erreur lors de la récupération des problèmes' },
+      { status: 500 }
+    );
   }
 }

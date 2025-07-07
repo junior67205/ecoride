@@ -4,19 +4,11 @@ export type RoleCardProps = {
   label: string;
   desc: string;
   icon: React.ElementType;
-  color: string;
   selected: boolean;
   onClick: () => void;
 };
 
-export default function RoleCard({
-  label,
-  desc,
-  icon: Icon,
-  color,
-  selected,
-  onClick,
-}: RoleCardProps) {
+export default function RoleCard({ label, desc, icon: Icon, selected, onClick }: RoleCardProps) {
   return (
     <button
       type="button"
